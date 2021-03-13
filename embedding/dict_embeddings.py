@@ -44,7 +44,7 @@ class EmbeddingDict(nn.Module):
     
     self.file_dir = config['file_directory']
     with open(self.file_dir) as embedding_file:
-      self.full_information = json.loads(embedding_file)
+      self.full_information = json.load(embedding_file)
      
     if 'key' in config:
       key = config['key']
@@ -90,6 +90,8 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
   """
   def __init__(self, config):
     super(EmbeddingDictSelectPoS_kor, self).__init__(config)
+    # Convert to tensor for simple indexing
+    self.embeddings = self.embeddings.weight
   
   def forward(self, inputs):
     lexical_morphemes_tag = [
@@ -104,14 +106,14 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
       
       embedded.append([])
       
-      for word in input[pos]:
+      for word in input['pos']:
         word_embedding = torch.zeros(2 * self.embed_size)
         for morph in word:
           pos_tag = morph['pos_tag']
           if pos_tag in lexical_morphemes_tag:
-            word_embedding[:self.embed_size] = self.embedding[self.stoi[self.target(morph)]]
+            word_embedding[:self.embed_size] = self.embeddings[self.stoi[self.target(morph)]]
           else:
-            word_embedding[self.embed_size:] = self.embedding[self.stoi[self.target(morph)]]
+            word_embedding[self.embed_size:] = self.embeddings[self.stoi[self.target(morph)]]
             
         embedded[i].append(torch.Tensor(word_embedding))
     
@@ -124,7 +126,7 @@ class EmbeddingGloVe_kor(EmbeddingDictSelectPoS_kor):
   def __init__(self, config):
     super(EmbeddingGloVe_kor, self).__init__(config)
   
-  def target(word):
+  def target(self, word):
     if word['text'] in self.stoi:
       return word['text']
     else:
@@ -134,7 +136,7 @@ class EmbeddingPoS_kor(EmbeddingDictSelectPoS_kor):
   def __init__(self, config):
     super(EmbeddingPoS_kor, self).__init__(config)
   
-  def target(word):
+  def target(self, word):
     if word['pos_tag'] in self.stoi:
       return word['pos_tag']
     else:
