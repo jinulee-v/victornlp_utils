@@ -92,6 +92,7 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
     super(EmbeddingDictSelectPoS_kor, self).__init__(config)
     # Convert to tensor for simple indexing
     self.embeddings = self.embeddings.weight
+    self.embed_size *= 2
   
   def forward(self, inputs):
     lexical_morphemes_tag = [
@@ -101,21 +102,22 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
       'IC', 'SL'
     ]
     embedded = []
-    for i, input in enumerate(inputs):
+    for input in inputs:
       assert 'pos' in input
       
-      embedded.append([])
-      
+      word_i = 1
+      word_embedding = torch.zeros(input['word_count'] + 1, self.embed_size).to(self.embeddings.device)
       for word in input['pos']:
-        word_embedding = torch.zeros(2 * self.embed_size)
+        
         for morph in word:
           pos_tag = morph['pos_tag']
           if pos_tag in lexical_morphemes_tag:
-            word_embedding[:self.embed_size] = self.embeddings[self.stoi[self.target(morph)]]
+            word_embedding[word_i, :self.embed_size//2] = self.embeddings[self.stoi[self.target(morph)]]
           else:
-            word_embedding[self.embed_size:] = self.embeddings[self.stoi[self.target(morph)]]
+            word_embedding[word_i, self.embed_size//2:] = self.embeddings[self.stoi[self.target(morph)]]
+        word_i += 1
             
-        embedded[i].append(torch.Tensor(word_embedding))
+      embedded.append(word_embedding)
     
     embedded = torch.nn.utils.rnn.pad_sequence(embedded, batch_first=True)
       
