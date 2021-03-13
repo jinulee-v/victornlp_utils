@@ -86,14 +86,14 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
           ...
         ]
   
-  Follows Mecab morpheme tagging indications.
+  Follows Sejong morpheme tagging format.
   """
   def __init__(self, config):
     super(EmbeddingDictSelectPoS_kor, self).__init__(config)
   
   def forward(self, inputs):
     lexical_morphemes_tag = [
-      'NNG', 'NNP', 'NNB', 'NNBC', 'NR', 'NP',
+      'NNG', 'NNP', 'NNB', 'NR', 'NP',
       'VV', 'VA', 'VX', 'VCP', 'VCN',
       'MM' 'MAG', 'MAJ',
       'IC', 'SL'
@@ -107,7 +107,7 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
       for word in input[pos]:
         word_embedding = torch.zeros(2 * self.embed_size)
         for morph in word:
-          pos_tag = morph.split('/', -1)
+          pos_tag = morph['pos_tag']
           if pos_tag in lexical_morphemes_tag:
             word_embedding[:self.embed_size] = self.embedding[self.stoi[self.target(morph)]]
           else:
@@ -122,21 +122,20 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
 
 class EmbeddingGloVe_kor(EmbeddingDictSelectPoS_kor):
   def __init__(self, config):
-    super(EmbeddingGloVe_kor).__init__(config)
+    super(EmbeddingGloVe_kor, self).__init__(config)
   
   def target(word):
-    if word in self.stoi:
-      return word
+    if word['text'] in self.stoi:
+      return word['text']
     else:
       return 'UNK'
 
 class EmbeddingPoS_kor(EmbeddingDictSelectPoS_kor):
   def __init__(self, config):
-    super(EmbeddingGloVe_kor).__init__(config)
+    super(EmbeddingPoS_kor, self).__init__(config)
   
   def target(word):
-    target = word.split('/', -1)
-    if target in self.stoi:
-      return target
+    if word['pos_tag'] in self.stoi:
+      return word['pos_tag']
     else:
       return 'UNK'
