@@ -28,7 +28,7 @@ class EmbeddingBERT_kor(nn.Module):
     Constructor for EmbeddingBERT_kor.
     
     @param self The object pointer.
-    @param config Dictionary. Configuration for EmbeddingBERT_kor(unused)
+    @param config Dictionary. Configuration for EmbeddingBERT_kor
     """
     super(EmbeddingBERT_kor, self).__init__()
     self.tokenizer = get_tokenizer()
@@ -36,6 +36,7 @@ class EmbeddingBERT_kor(nn.Module):
     self.model.eval()
     self.model.requires_grad = False
     self.embed_size = 1536
+    self.special_tokens = config['special_tokens']
 
   def forward(self, inputs):
     """
@@ -67,6 +68,7 @@ class EmbeddingBERT_kor(nn.Module):
       embedded.append([])
       for j in range(len(tokens)):
         if tokens[j] == '[SEP]':
+          embedded[i].append(output[i][j].repeat(2).unsqueeze(0))
           break
         if tokens[j] == '[CLS]' or tokens[j].startswith('▁'):
           temp = output[i][j]
@@ -75,5 +77,9 @@ class EmbeddingBERT_kor(nn.Module):
           embedded[i].append(temp.unsqueeze(0))
           temp = None
       embedded[i] = torch.cat(embedded[i], 0)
+      if 'bos' not in self.special_tokens:
+        embedded[i] = embedded[i][1:]
+      if 'eos' not in self.special_tokens:
+        embedded[i] = embedded[i][:-1]
     embedded = nn.utils.rnn.pad_sequence(embedded, batch_first=True)
     return embedded
