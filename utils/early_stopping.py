@@ -37,7 +37,7 @@ class EarlyStopping():
     self.eps = eps
     self.maximize = maximize
 
-    assert eps > 0
+    assert eps >= 0
 
     self.best_epoch = 0
     if maximize:
