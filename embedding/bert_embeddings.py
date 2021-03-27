@@ -18,9 +18,9 @@ import torch.nn as nn
 from transformers import BertModel
 from kobert_transformers import get_tokenizer
 
-class EmbeddingBERT_kor(nn.Module):
+class EmbeddingBERTWordPhr_kor(nn.Module):
   """
-  Embedding model using KoBERT(SKT-brain, 2019).
+  Word-phrase level Embedding model using KoBERT(SKT-brain, 2019).
   Concatenates the hidden state of initial & final wordpiece tokens.
   """
   def __init__(self, config):

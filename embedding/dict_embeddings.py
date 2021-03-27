@@ -79,9 +79,9 @@ class EmbeddingDict(nn.Module):
       self.stoi[token] = len(self.itos)
       self.itos.append(token)
 
-class EmbeddingDictSelectPoS_kor(EmbeddingDict):
+class EmbeddingDictWordPhr_kor(EmbeddingDict):
   """
-  Abstract template for Korean lexicon-style embeddings. Implements practical PoS tag selection.
+  Abstract template for Korean lexicon-style embeddings. Implements Word-phrase level PoS tag selection.
   
   Korean "pos" format:
         [
@@ -135,7 +135,7 @@ class EmbeddingDictSelectPoS_kor(EmbeddingDict):
     return embedded
 
 
-class EmbeddingGloVe_kor(EmbeddingDictSelectPoS_kor):
+class EmbeddingGloVeWordPhr_kor(EmbeddingDictWordPhr_kor):
   def __init__(self, config):
     super(EmbeddingGloVe_kor, self).__init__(config)
   
@@ -145,7 +145,7 @@ class EmbeddingGloVe_kor(EmbeddingDictSelectPoS_kor):
     else:
       return self.special_tokens['unk']
 
-class EmbeddingPoS_kor(EmbeddingDictSelectPoS_kor):
+class EmbeddingPoSWordPhr_kor(EmbeddingDictWordPhr_kor):
   def __init__(self, config):
     super(EmbeddingPoS_kor, self).__init__(config)
   
