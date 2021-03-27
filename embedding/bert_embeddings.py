@@ -25,12 +25,12 @@ class EmbeddingBERTWordPhr_kor(nn.Module):
   """
   def __init__(self, config):
     """
-    Constructor for EmbeddingBERT_kor.
+    Constructor for EmbeddingBERTWordPhr_kor.
     
     @param self The object pointer.
     @param config Dictionary. Configuration for EmbeddingBERT_kor
     """
-    super(EmbeddingBERT_kor, self).__init__()
+    super(EmbeddingBERTWordPhr_kor, self).__init__()
     self.tokenizer = get_tokenizer()
     self.model = BertModel.from_pretrained('monologg/kobert')
     self.model.eval()

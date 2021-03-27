@@ -93,7 +93,7 @@ class EmbeddingDictWordPhr_kor(EmbeddingDict):
   Follows Sejong morpheme tagging format.
   """
   def __init__(self, config):
-    super(EmbeddingDictSelectPoS_kor, self).__init__(config)
+    super(EmbeddingDictWordPhr_kor, self).__init__(config)
     # Convert to tensor for simple indexing
     self.embeddings = self.embeddings.weight
     self.embed_size *= 2
@@ -137,7 +137,7 @@ class EmbeddingDictWordPhr_kor(EmbeddingDict):
 
 class EmbeddingGloVeWordPhr_kor(EmbeddingDictWordPhr_kor):
   def __init__(self, config):
-    super(EmbeddingGloVe_kor, self).__init__(config)
+    super(EmbeddingGloVeWordPhr_kor, self).__init__(config)
   
   def target(self, word):
     if word['text'] in self.stoi:
@@ -145,9 +145,10 @@ class EmbeddingGloVeWordPhr_kor(EmbeddingDictWordPhr_kor):
     else:
       return self.special_tokens['unk']
 
+
 class EmbeddingPoSWordPhr_kor(EmbeddingDictWordPhr_kor):
   def __init__(self, config):
-    super(EmbeddingPoS_kor, self).__init__(config)
+    super(EmbeddingPoSWordPhr_kor, self).__init__(config)
   
   def target(self, word):
     if word['pos_tag'] in self.stoi:
