@@ -130,7 +130,7 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
 
 
 if __name__ == '__main__':
-  os.chdir(sys.args[2])
+  os.chdir(sys.argv[2])
   with open('Modu_DP_raw.json') as modu_dp_file, \
        open('Modu_PoS_raw.json') as modu_pos_file, \
        open('Modu_NER_raw.json') as modu_ner_file, \
