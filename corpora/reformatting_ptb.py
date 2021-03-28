@@ -14,10 +14,12 @@ pos_concat_with_prev = set([
 ])
 # exceptional cases:
 word_concat_with_prev = set([
-  '...', ':', ';', '%'      # exceptional cases
+  '...', ':', ';', '%',     # exceptional cases
+  '\'t', 'n\'t',
+  '\'ll', '\'s', '\'d'
 ])
-word_concat_with_next = set([
-  '$', '#'                  # currency units
+pos_concat_with_next = set([
+  '$', '#', '``'            # currency units
 ])
 
 # Dictionary for raw text retrevial
@@ -73,7 +75,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
              or line[WORD] in word_concat_with_prev \
              or concat_next
     # if concat_next: do not insert space after current token
-    concat_next = line[WORD] in word_concat_with_next
+    concat_next = line[POS] in pos_concat_with_next
     
     victornlp[-1]['text'] += ('' if concat else ' ') + line[WORD]
     victornlp[-1]['pos'].append({
@@ -132,7 +134,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
              or line[WORD] in word_concat_with_prev \
              or concat_next
     # if concat_next: do not insert space after current token
-    concat_next = line[WORD] in word_concat_with_next
+    concat_next = line[POS] in pos_concat_with_next
     
     victornlp[-1]['text'] += ('' if concat else ' ') + line[WORD]
     victornlp[-1]['pos'].append({
@@ -181,7 +183,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
              or line[WORD] in word_concat_with_prev \
              or concat_next
     # if concat_next: do not insert space after current token
-    concat_next = line[WORD] in word_concat_with_next
+    concat_next = line[POS] in pos_concat_with_next
     
     victornlp[-1]['text'] += ('' if concat else ' ') + line[WORD]
     victornlp[-1]['pos'].append({
