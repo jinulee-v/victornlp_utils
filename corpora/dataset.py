@@ -1,5 +1,5 @@
 """
-@module corpus
+@module dataset
 'VictorNLP Framework' corpus formatting functions.
 
 '@param inputs' shares the following format.
