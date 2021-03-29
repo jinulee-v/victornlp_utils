@@ -103,7 +103,7 @@ class EmbeddingDictWordPhr_kor(EmbeddingDict):
       'NNG', 'NNP', 'NNB', 'NR', 'NP',
       'VV', 'VA', 'VX', 'VCP', 'VCN',
       'MM' 'MAG', 'MAJ',
-      'IC', 'SL'
+      'IC', 'SL', 'SN', 'SH', 'XR'
     ]
     embedded = []
     for input in inputs:
