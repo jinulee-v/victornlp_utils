@@ -1,3 +1,13 @@
+Instructions:
+Recieve an API key and download BERT model(1/4) file from https://aiopen.etri.re.kr/aidata_download.php.
+Only following files are required for VictorNLP utils:
+
+embedding/data/EmbeddingBERTMorph_kor/
+- bert_config.json
+- pytorch_model.bin
+- vocab.korean_morp.list
+
+
 * 엑소브레인 한국어 BERT 언어모델(KorBERT) 배포 README
 * 배포일: 2019-06-03
 
