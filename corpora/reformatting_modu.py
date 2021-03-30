@@ -7,8 +7,6 @@ import os, sys
 import json
 from torch.utils.data import random_split
 
-from ..victornlp_utils.pos_tagger.pos_tagger import *
-
 def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, dev_file, test_file, labels_file):
   victornlp = {}
   
@@ -33,7 +31,7 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
         arc['head'] = arc.pop('head')
         arc['label'] = arc.pop('label')
         if arc['label'] not in dp_labels:
-          dp_labels.append(arc['label'])
+          dp_labels.add(arc['label'])
       victornlp[id] = (sent)
   del modu
   dp_labels = sorted(list(dp_labels))
@@ -50,11 +48,9 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
         while len(target['pos']) < morph['word_id']:
           target['pos'].append([])
         target['pos'][morph['word_id'] - 1].append({
-          'id': morph['id']
+          'id': morph['id'],
           'text': morph['form'],
-          'pos_tag': morph['label'],
-          'begin': morph['begin'],
-          'end': morph['end']      # begin & end: temporay info for NER alignment
+          'pos_tag': morph['label']
         })
         pos_labels.add(morph['label'])
   del modu
@@ -69,30 +65,9 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
       target = victornlp[id]
       target['named_entity'] = []
 
-      i_wp = -1
-      i_morph = 0
-      def next_morph():
-        i_morph += 1
-        if i_wp < 0 or i_morph == len(target['pos'][i_wp]):
-          i_wp += 1
-          i_morph = 0
-        return target['pos'][i_wp][i_morph]
-
       # re-write start/end as morpheme IDs, not character.
       for ne in sent['NE']:
         ne.pop('id', None)
-        while next_morph()['begin'] < ne['begin']:
-          pass
-        start = next_morph()
-        ne['begin'] = start['id']
-        if start['end'] == ne['end']:
-          end = start
-        else:
-          while next_morph()['end'] < ne['end']:
-            pass
-        end = next_morph()
-        ne['end'] = end['id']
-
         target['named_entity'].append(ne)
       
       # add ner labels
@@ -102,11 +77,6 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
 
   # Sum up...
   victornlp = list(victornlp.values())
-  for sent in victornlp: #cleanup begin and end in PoS
-    for word in sent['pos']:
-      for morph in word:
-        morph.pop('begin')
-        morph.pop('end')
   
   labels = {
     'pos_labels': pos_labels,
@@ -130,12 +100,12 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
 
 
 if __name__ == '__main__':
-  os.chdir(sys.argv[2])
+  os.chdir(sys.argv[1])
   with open('Modu_DP_raw.json') as modu_dp_file, \
        open('Modu_PoS_raw.json') as modu_pos_file, \
        open('Modu_NER_raw.json') as modu_ner_file, \
        open('VictorNLP_kor(Modu)_train.json', 'w') as train_file, \
-       open('VictorNLP_kor(Modu)_dev.json', 'w') as test_file, \
+       open('VictorNLP_kor(Modu)_dev.json', 'w') as dev_file, \
        open('VictorNLP_kor(Modu)_test.json', 'w') as test_file, \
        open('VictorNLP_kor(Modu)_labels.json', 'w') as labels_file:
     modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, dev_file, test_file, labels_file)
