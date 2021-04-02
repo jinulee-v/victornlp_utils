@@ -30,12 +30,10 @@ import unicodedata
 import os
 import logging
 
-from .file_utils import cached_path
-
 logger = logging.getLogger(__name__)
 
 ### Jinu Lee @ 2021-03-28
-VOCAB_NAME = 'vocab.korean_morph.list'
+VOCAB_NAME = 'vocab.korean_morp.list'
 
 
 def load_vocab(vocab_file):

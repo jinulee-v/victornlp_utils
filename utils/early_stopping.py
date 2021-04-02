@@ -3,6 +3,7 @@
 """
 
 import logging
+import torch
 
 class EarlyStopping():
   """
@@ -60,7 +61,7 @@ class EarlyStopping():
     """
     self.logger.info('Early stopping...')
 
-    if maximize:
+    if self.maximize:
       if criterion > self.best + self.eps:
         self.logger.info('Updating best epoch...')
         self.logger.info('- Current epoch: %f', criterion)
@@ -68,7 +69,7 @@ class EarlyStopping():
         self.best_epoch = epoch
         self.best = criterion
 
-        torch.save(model.state_dicts(), save_dir)
+        torch.save(model.state_dict(), save_dir)
       else:
         self.logger.info('Not updating...')
         self.logger.info('- Current epoch: %f', criterion)
@@ -82,15 +83,15 @@ class EarlyStopping():
       if criterion < self.best - self.eps:
         self.logger.info('Updating best epoch...')
         self.logger.info('- Current epoch: %f', criterion)
-        self.logger/info('- Previous best epoch: %f (epoch: %d)', self.best, self.best_epoch)
+        self.logger.info('- Previous best epoch: %f (epoch: %d)', self.best, self.best_epoch)
         self.best_epoch = epoch
         self.best = criterion
 
-        torch.save(model.state_dicts(), save_dir)
+        torch.save(model.state_dict(), save_dir)
       else:
         self.logger.info('Not updating...')
         self.logger.info('- Current epoch: %f', criterion)
-        self.logger/info('- Previous best epoch: %f (epoch: %d)', self.best, self.best_epoch)
+        self.logger.info('- Previous best epoch: %f (epoch: %d)', self.best, self.best_epoch)
 
         self.waits += 1
         self.logger.info('Patience %d / %d', self.waits, self.patience)

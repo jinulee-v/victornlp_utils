@@ -145,7 +145,7 @@ class EmbeddingBERTMorph_kor(nn.Module):
     for i, input in enumerate(inputs):
       # Input format:
       # ETRI/SL 에서/JKB 한국어/NNP BERT/SL 언어/NNG 모델/NNG 을/JKO 배포/NNG 하/XSV 었/EP 다/EF ./SF
-      pos_text = ' '.join([morph['text'] + '/' + morph['pos_tag'] for morph in itertools.from_iterable(input['pos'])])
+      pos_text = ' '.join([morph['text'] + '/' + morph['pos_tag'] for morph in itertools.chain.from_iterable(input['pos'])])
       tokens = self.tokenizer.tokenize('[CLS] '+input['text']+' [SEP]')
       tokens_list.append(tokens)
       tokens = self.tokenizer.convert_tokens_to_ids(tokens)
@@ -155,13 +155,15 @@ class EmbeddingBERTMorph_kor(nn.Module):
 
       # Word phrase recovery: select last lexical / functional morpheme from each WP
       if self.is_word_phrase_embedding:
+        j = 0
         for word in input['pos']:
           selects = [None, None] # lexical & functinoal index
           for morph in word:
+            j += 1
             if morph['pos_tag'] in lexical_morphemes_tag:
-              selects[0] = morph['id']
+              selects[0] = j
             if morph['pos_tag'] not in lexical_morphemes_tag:
-              selects[1] = morph['id']
+              selects[1] = j
           sent_wp_select[i].append(selects)
     sentences = nn.utils.rnn.pad_sequence(sentences, batch_first=True).to(device)
     attention_mask = nn.utils.rnn.pad_sequence(attention_mask, batch_first=True).to(device)
@@ -178,9 +180,12 @@ class EmbeddingBERTMorph_kor(nn.Module):
       embedded = []
       for sent, wp_select in zip(output, sent_wp_select):
         embedded.append(torch.zeros(len(wp_select), self.embed_size).to(device))
-        for i, (left, right) in enumerate(sent_wp_select):
-          embedded[-1][i][:embed_size//2] = sent[left]
-          embedded[-1][i][embed_size//2:] = sent[right]
+        for i, select in enumerate(sent_wp_select):
+          left = select[0]; right = select[1]
+          if left:
+            embedded[-1][i][:self.embed_size//2] = sent[left]
+          if right:
+            embedded[-1][i][self.embed_size//2:] = sent[right]
       embedded = nn.utils.rnn.pad_sequence(embedded, batch_first=True)
       return embedded
     
