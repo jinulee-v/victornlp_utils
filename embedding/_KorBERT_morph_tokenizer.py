@@ -125,21 +125,9 @@ class BertTokenizer(object):
 		vocab_file = pretrained_model_name
 		if os.path.isdir(vocab_file):
 			vocab_file = os.path.join(vocab_file, VOCAB_NAME)
-		# redirect to the cache, if necessary
-		try:
-			resolved_vocab_file = cached_path(vocab_file, cache_dir=cache_dir)
-		except FileNotFoundError:
-			logger.error(
-				"Model name '{}' was not found in model name list ({}). "
-			)
-			return None
-		if resolved_vocab_file == vocab_file:
-			logger.info("loading vocabulary file {}".format(vocab_file))
-		else:
-			logger.info("loading vocabulary file {} from cache at {}".format(
-				vocab_file, resolved_vocab_file))
+		logger.info("loading vocabulary file {}".format(vocab_file))
 		# Instantiate tokenizer.
-		tokenizer = cls(resolved_vocab_file, *inputs, **kwargs)
+		tokenizer = cls(vocab_file, *inputs, **kwargs)
 		return tokenizer
 
 
