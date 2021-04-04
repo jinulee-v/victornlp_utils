@@ -73,9 +73,9 @@ class EmbeddingBERTWordPhr_kor(nn.Module):
         if tokens[j] == '[SEP]':
           embedded[i].append(output[i][j].repeat(2).unsqueeze(0))
           break
-        if tokens[j] == '[CLS]' or tokens[j].startswith('▁'):
+        if tokens[j] == '[CLS]' or (tokens[j].startswith('▁') and len(tokens[j])>1):
           temp = output[i][j]
-        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or tokens[j+1].startswith('▁'):
+        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or (tokens[j+1].startswith('▁') and len(token[j+1]) > 1):
           temp = torch.cat([temp, output[i][j]], 0)
           embedded[i].append(temp.unsqueeze(0))
           temp = None
@@ -180,7 +180,7 @@ class EmbeddingBERTMorph_kor(nn.Module):
       embedded = []
       for sent, wp_select in zip(output, sent_wp_select):
         embedded.append(torch.zeros(len(wp_select), self.embed_size).to(device))
-        for i, select in enumerate(sent_wp_select):
+        for i, select in enumerate(wp_select):
           left = select[0]; right = select[1]
           if left:
             embedded[-1][i][:self.embed_size//2] = sent[left]
@@ -191,7 +191,7 @@ class EmbeddingBERTMorph_kor(nn.Module):
     
     # return embeddings for all morphemes
     else:
-      output = output * attention_mask
+      output = output * attention_mask.unsqueeze(2)
       if 'eos' not in self.special_tokens:
         # remove eos token [SEP]
         lengths = lengths.unsqueeze(1).unsqueeze(2).repeat(1, 1, self.embed_size).to(device)
