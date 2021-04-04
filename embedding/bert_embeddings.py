@@ -56,7 +56,7 @@ class EmbeddingBERTWordPhr_kor(nn.Module):
     sentences = []
     attention_mask = []
     for input in inputs:
-      tokens = self.tokenizer.tokenize('[CLS] '+input['text']+' [SEP]')
+      tokens = self.tokenizer.tokenize('[CLS] '+input['text'].replace(' _ ', ' ').replace('_', '')+' [SEP]')
       tokens_list.append(tokens)
       tokens = self.tokenizer.convert_tokens_to_ids(tokens)
       sentences.append(torch.tensor(tokens, dtype=torch.long))
@@ -73,9 +73,9 @@ class EmbeddingBERTWordPhr_kor(nn.Module):
         if tokens[j] == '[SEP]':
           embedded[i].append(output[i][j].repeat(2).unsqueeze(0))
           break
-        if tokens[j] == '[CLS]' or (tokens[j].startswith('▁') and len(tokens[j])>1):
+        if tokens[j] == '[CLS]' or tokens[j].startswith('▁'):
           temp = output[i][j]
-        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or (tokens[j+1].startswith('▁') and len(token[j+1]) > 1):
+        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or tokens[j+1].startswith('▁'):
           temp = torch.cat([temp, output[i][j]], 0)
           embedded[i].append(temp.unsqueeze(0))
           temp = None
