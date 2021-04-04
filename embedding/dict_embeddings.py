@@ -78,6 +78,36 @@ class EmbeddingDict(nn.Module):
       assert type in ['unk', 'eos', 'bos']
       self.stoi[token] = len(self.itos)
       self.itos.append(token)
+  
+  def forward(self, inputs):
+    """
+    @brief creates embedding for every space-separated tokens
+
+    @param inputs VictorNLP format corpus data
+    @return embedded Tensor(batch_size, max_length, embed_size)
+    """
+    embedded = []
+    for input in inputs:
+      has_bos = 1 if 'bos' in self.special_tokens else 0
+      has_eos = 1 if 'eos' in self.special_tokens else 0
+      word_embedding = torch.zeros(input['word_count'] + has_bos + has_eos, self.embed_size).to(self.embeddings.device)
+      
+      if has_bos:
+        word_embedding[0] = self.embeddings[self.stoi[self.special_tokens['bos']]].repeat(2)
+      if has_eos:
+        word_embedding[-1] = self.embeddings[self.stoi[self.special_tokens['eos']]].repeat(2)
+       
+      tokens = input['text'].split()
+      for word_i, token in enumerate(tokens, has_bos):
+        word_embedding[word_i] = self.embedding(self.target(token))
+      
+      embedded.append(word_embedding)
+
+    embedded = torch.nn.utils.rnn.pad_sequence(embedded, batch_first=True)
+    return embedded
+  
+  def target(self, token):
+    return token if token in self.itos else self.special_tokens['unk']
 
 class EmbeddingDictWordPhr_kor(EmbeddingDict):
   """
