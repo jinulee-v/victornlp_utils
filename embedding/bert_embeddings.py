@@ -16,10 +16,10 @@ import itertools
 
 import torch
 import torch.nn as nn
-from transformers import BertModel
+from transformers import BertTokenizer, BertModel
 from kobert_transformers import get_tokenizer
 
-from ._KorBERT_morph_tokenizer import BertTokenizer
+from .KorBERT_morph_tokenizer import BertTokenizer as KorBertTokenizer
 
 class EmbeddingBERTWordPhr_kor(nn.Module):
   """
@@ -110,7 +110,7 @@ class EmbeddingBERTMorph_kor(nn.Module):
 
     # Load model from configuration
     model_dir = config['file_directory']
-    self.tokenizer = BertTokenizer.from_pretrained(model_dir)
+    self.tokenizer = KorBertTokenizer.from_pretrained(model_dir)
     self.model = BertModel.from_pretrained(model_dir)
     self.model.eval()
     self.model.requires_grad = False
