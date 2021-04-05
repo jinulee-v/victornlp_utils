@@ -64,6 +64,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     if line[DEP] == 1:
       victornlp.append({
         'text': '',
+        'word_count': 0,
         'pos': [],
         'dependency': []
       })
@@ -83,6 +84,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
       'text': line[WORD],
       'pos_tag': line[POS]
     })
+    victornlp[-1]['word_count'] = len(victornlp[-1]['pos'])
     victornlp[-1]['dependency'].append({
       'dep': line[DEP],
       'head': line[HEAD],
@@ -124,6 +126,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     if line[DEP] == 1:
       victornlp.append({
         'text': '',
+        'word_count': 0,
         'pos': [],
         'dependency': []
       })
@@ -142,6 +145,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
       'text': line[WORD],
       'pos_tag': line[POS]
     })
+    victornlp[-1]['word_count'] = len(victornlp[-1]['pos'])
     victornlp[-1]['dependency'].append({
       'dep': line[DEP],
       'head': line[HEAD],
@@ -172,6 +176,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     if line[DEP] == 1:
       victornlp.append({
         'text': '',
+        'word_count': 0,
         'pos': [],
         'dependency': []
       })
@@ -191,6 +196,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
       'text': line[WORD],
       'pos_tag': line[POS]
     })
+    victornlp[-1]['word_count'] = len(victornlp[-1]['pos'])
     victornlp[-1]['dependency'].append({
       'dep': line[DEP],
       'head': line[HEAD],

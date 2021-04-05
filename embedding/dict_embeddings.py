@@ -90,7 +90,7 @@ class EmbeddingDict(nn.Module):
     for input in inputs:
       has_bos = 1 if 'bos' in self.special_tokens else 0
       has_eos = 1 if 'eos' in self.special_tokens else 0
-      word_embedding = torch.zeros(input['word_count'] + has_bos + has_eos, self.embed_size).to(self.embeddings.device)
+      word_embedding = torch.zeros(input['word_count'] + has_bos + has_eos, self.embed_size).to(next(self.embeddings.parameters()).device)
       
       if has_bos:
         word_embedding[0] = self.embeddings[self.stoi[self.special_tokens['bos']]].repeat(2)
