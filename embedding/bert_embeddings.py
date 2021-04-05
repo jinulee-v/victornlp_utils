@@ -213,7 +213,7 @@ class EmbeddingBERT_eng(nn.Module):
     @param self The object pointer.
     @param config Dictionary. Configuration for EmbeddingBERTWordPhr_kor
     """
-    super(EmbeddingBERTWordPhr_kor, self).__init__()
+    super(EmbeddingBERT_eng, self).__init__()
     self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     self.model = BertModel.from_pretrained('bert-base-uncased')
     self.model.eval()

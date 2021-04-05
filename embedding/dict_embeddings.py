@@ -109,6 +109,15 @@ class EmbeddingDict(nn.Module):
   def target(self, token):
     return token if token in self.itos else self.special_tokens['unk']
 
+class EmbeddingPoS_eng(EmbeddingDict):
+  """
+  PoS tag embedding for English.
+  """
+class EmbeddingGloVe_eng(EmbeddingDict):
+  """
+  GloVe embedding for English.
+  """
+
 class EmbeddingDictWordPhr_kor(EmbeddingDict):
   """
   Abstract template for Korean lexicon-style embeddings. Implements Word-phrase level PoS tag selection.
