@@ -64,6 +64,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     if line[DEP] == 1:
       victornlp.append({
         'text': '',
+        'text_clean': '',
         'word_count': 0,
         'pos': [],
         'dependency': []
@@ -78,7 +79,8 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     # if concat_next: do not insert space after current token
     concat_next = line[POS] in pos_concat_with_next
     
-    victornlp[-1]['text'] += ('' if concat else ' ') + line[WORD]
+    victornlp[-1]['text'] += ('' if not victornlp[-1]['text'] else ' ') + line[WORD]
+    victornlp[-1]['text_clean'] += ('' if concat else ' ') + line[WORD]
     victornlp[-1]['pos'].append({
       'id': line[DEP],
       'text': line[WORD],
@@ -126,6 +128,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     if line[DEP] == 1:
       victornlp.append({
         'text': '',
+        'text_clean': '',
         'word_count': 0,
         'pos': [],
         'dependency': []
@@ -139,7 +142,8 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     # if concat_next: do not insert space after current token
     concat_next = line[POS] in pos_concat_with_next
     
-    victornlp[-1]['text'] += ('' if concat else ' ') + line[WORD]
+    victornlp[-1]['text'] += ('' if not victornlp[-1]['text'] else ' ') + line[WORD]
+    victornlp[-1]['text_clean'] += ('' if concat else ' ') + line[WORD]
     victornlp[-1]['pos'].append({
       'id': line[DEP],
       'text': line[WORD],
@@ -176,6 +180,7 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     if line[DEP] == 1:
       victornlp.append({
         'text': '',
+        'text_clean': '',
         'word_count': 0,
         'pos': [],
         'dependency': []
@@ -190,7 +195,8 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
     # if concat_next: do not insert space after current token
     concat_next = line[POS] in pos_concat_with_next
     
-    victornlp[-1]['text'] += ('' if concat else ' ') + line[WORD]
+    victornlp[-1]['text'] += ('' if not victornlp[-1]['text'] else ' ') + line[WORD]
+    victornlp[-1]['text_clean'] += ('' if concat else ' ') + line[WORD]
     victornlp[-1]['pos'].append({
       'id': line[DEP],
       'text': line[WORD],

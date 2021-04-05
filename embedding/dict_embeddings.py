@@ -86,20 +86,22 @@ class EmbeddingDict(nn.Module):
     @param inputs VictorNLP format corpus data
     @return embedded Tensor(batch_size, max_length, embed_size)
     """
+    device = next(self.parameters()).device
+
     embedded = []
     for input in inputs:
       has_bos = 1 if 'bos' in self.special_tokens else 0
       has_eos = 1 if 'eos' in self.special_tokens else 0
-      word_embedding = torch.zeros(input['word_count'] + has_bos + has_eos, self.embed_size).to(next(self.embeddings.parameters()).device)
+      word_embedding = torch.zeros(input['word_count'] + has_bos + has_eos, self.embed_size).to(device)
       
       if has_bos:
-        word_embedding[0] = self.embeddings[self.stoi[self.special_tokens['bos']]].repeat(2)
+        word_embedding[0] = self.embeddings(torch.tensor(self.stoi[self.special_tokens['bos']], dtype=torch.long, device=device))
       if has_eos:
-        word_embedding[-1] = self.embeddings[self.stoi[self.special_tokens['eos']]].repeat(2)
+        word_embedding[-1] = self.embeddings(torch.tensor(self.stoi[self.special_tokens['eos']], dtype=torch.long, device=device))
        
-      tokens = input['text'].split()
+      tokens = [pos['text'] for pos in input['pos']]
       for word_i, token in enumerate(tokens, has_bos):
-        word_embedding[word_i] = self.embedding(self.target(token))
+        word_embedding[word_i] = self.embeddings(torch.tensor(self.stoi[self.target(token)], dtype=torch.long, device=device))
       
       embedded.append(word_embedding)
 

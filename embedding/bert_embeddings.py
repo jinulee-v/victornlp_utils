@@ -233,11 +233,13 @@ class EmbeddingBERT_eng(nn.Module):
     device = next(self.parameters()).device
     
     tokens_list = []
+    wp_list = []
     sentences = []
     attention_mask = []
     for input in inputs:
       tokens = self.tokenizer.tokenize('[CLS] '+input['text']+' [SEP]')
       tokens_list.append(tokens)
+      wp_list.append(input['text'].lower().split(' ') + ['SEP'])
       tokens = self.tokenizer.convert_tokens_to_ids(tokens)
       sentences.append(torch.tensor(tokens, dtype=torch.long))
       attention_mask.append(torch.ones([len(tokens)], dtype=torch.long))
@@ -250,16 +252,18 @@ class EmbeddingBERT_eng(nn.Module):
     temp = None
     for i, tokens in enumerate(tokens_list):
       embedded.append([])
+      wp_i = -1
       for j in range(len(tokens)):
         if tokens[j] == '[SEP]':
           embedded[i].append(output[i][j].repeat(2).unsqueeze(0))
           break
-        if tokens[j] == '[CLS]' or not tokens[j].startswith('##'):
+        if tokens[j] == '[CLS]' or wp_list[i][wp_i].startswith(tokens[j]):
           temp = output[i][j]
-        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or not tokens[j+1].startswith('##'):
+        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or wp_list[i][wp_i+1].startswith(tokens[j+1]):
           temp = torch.cat([temp, output[i][j]], 0)
           embedded[i].append(temp.unsqueeze(0))
           temp = None
+          wp_i += 1
       embedded[i] = torch.cat(embedded[i], 0)
       if 'bos' not in self.special_tokens:
         embedded[i] = embedded[i][1:]
