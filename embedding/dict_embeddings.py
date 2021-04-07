@@ -52,6 +52,7 @@ class EmbeddingDict(nn.Module):
     else:
       key = 'text'
     self.special_tokens = config['special_tokens']
+    assert 'pad' in self.special_tokens
     
     self.itos = []
     self.stoi = {}
@@ -75,7 +76,7 @@ class EmbeddingDict(nn.Module):
     
     self.requires_grad = bool(config['train'])
     for type, token in self.special_tokens.items():
-      assert type in ['unk', 'eos', 'bos']
+      assert type in ['unk', 'eos', 'bos', 'pad']
       self.stoi[token] = len(self.itos)
       self.itos.append(token)
   
@@ -92,21 +93,21 @@ class EmbeddingDict(nn.Module):
     for input in inputs:
       has_bos = 1 if 'bos' in self.special_tokens else 0
       has_eos = 1 if 'eos' in self.special_tokens else 0
-      word_embedding = torch.zeros(input['word_count'] + has_bos + has_eos, self.embed_size).to(device)
+      word_embedding = torch.zeros(input['word_count'] + has_bos + has_eos, dtype=torch.long).to(device)
       
       if has_bos:
-        word_embedding[0] = self.embeddings(torch.tensor(self.stoi[self.special_tokens['bos']], dtype=torch.long, device=device))
+        word_embedding[0] = self.stoi[self.special_tokens['bos']]
       if has_eos:
-        word_embedding[-1] = self.embeddings(torch.tensor(self.stoi[self.special_tokens['eos']], dtype=torch.long, device=device))
+        word_embedding[-1] = self.stoi[self.special_tokens['eos']]
        
       tokens = [pos['text'] for pos in input['pos']]
       for word_i, token in enumerate(tokens, has_bos):
-        word_embedding[word_i] = self.embeddings(torch.tensor(self.stoi[self.target(token)], dtype=torch.long, device=device))
+        word_embedding[word_i] = self.stoi[self.target(token)]
       
       embedded.append(word_embedding)
 
-    embedded = torch.nn.utils.rnn.pad_sequence(embedded, batch_first=True)
-    return embedded
+    embedded = torch.nn.utils.rnn.pad_sequence(embedded, batch_first=True, padding_value = self.stoi[self.special_tokens['pad']])
+    return self.embeddings(embedded)
   
   def target(self, token):
     return token if token in self.itos else self.special_tokens['unk']
