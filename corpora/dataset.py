@@ -58,5 +58,6 @@ def preprocessor_DependencyParsing(inputs):
   for input in inputs:
      assert input['text']
      assert input['pos']
+     assert len(input['pos']) == len(input['text'].split())
     
   return inputs

@@ -60,13 +60,13 @@ class EmbeddingDict(nn.Module):
       self.itos.append(info[key])
       self.stoi[info[key]] = i
       if config['from_pretrained']:
-        self.embeddings.append(torch.FloatTensor([float(x) for x in split(info['embedding'])]).unsqueeze(0))
+        self.embeddings.append(torch.tensor([float(x) for x in info['embedding'].split()]).unsqueeze(0))
     
     if config['from_pretrained']:
       # Read pretrained embedding
-      self.embed_size = self.embeddings[0].size(0)
-      for j in len(self.special_tokens):
-        self.embeddings.append(torch.zeros(self.embed_size))
+      self.embed_size = self.embeddings[0].size(1)
+      for j in self.special_tokens:
+        self.embeddings.append(torch.zeros(1, self.embed_size))
       self.embeddings = nn.Embedding.from_pretrained(torch.cat(self.embeddings, 0))
     else:
       # From-Scratch embedding
