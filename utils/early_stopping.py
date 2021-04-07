@@ -68,6 +68,7 @@ class EarlyStopping():
         self.logger/info('- Previous best epoch: %f (epoch: %d)', self.best, self.best_epoch)
         self.best_epoch = epoch
         self.best = criterion
+        self.waits = 0
 
         torch.save(model.state_dict(), save_dir)
       else:
@@ -86,6 +87,7 @@ class EarlyStopping():
         self.logger.info('- Previous best epoch: %f (epoch: %d)', self.best, self.best_epoch)
         self.best_epoch = epoch
         self.best = criterion
+        self.waits = 0
 
         torch.save(model.state_dict(), save_dir)
       else:
