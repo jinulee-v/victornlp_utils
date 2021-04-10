@@ -47,6 +47,16 @@ class VictorNLPDataset(Dataset):
   def collate_fn(batch):
     return batch
 
+def preprocessor_WordCount(inputs):
+  """
+  Adds word_count to inputs.
+  """
+  for input in inputs:
+     assert input['text']
+     input['word_count'] = len(input['text'].split())
+
+  return inputs
+
 def preprocessor_DependencyParsing(inputs):
   """
   Checks data integrity for dependency parsing.
@@ -58,6 +68,6 @@ def preprocessor_DependencyParsing(inputs):
   for input in inputs:
      assert input['text']
      assert input['pos']
-     assert len(input['pos']) == len(input['text'].split())
+     assert len(input['pos']) == input['word_count']
     
   return inputs

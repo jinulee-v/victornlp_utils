@@ -11,6 +11,7 @@ def pos_tag_Korean(inputs):
   Korean pos tagger. Uses Komoran by Shineware, wrapped by KoNLPy package.
   
   @param inputs List of dictionaries.
+  @return inputs Updated inputs.
   """
   komoran = Komoran()
   for input in inputs:
@@ -38,3 +39,5 @@ def pos_tag_Korean(inputs):
       word_i += 1
     assert len(pos) == input['word_count']
     input['pos'] = pos
+
+  return inputs
