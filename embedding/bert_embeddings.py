@@ -90,8 +90,8 @@ class EmbeddingBERTWordPhr_kor(nn.Module):
 lexical_morphemes_tag = [
   'NNG', 'NNP', 'NNB', 'NR', 'NP',
   'VV', 'VA', 'VX', 'VCP', 'VCN',
-  'MM' 'MAG', 'MAJ',
-  'IC', 'SL', 'SN', 'SH', 'XR'
+  'MMA', 'MMD', 'MMN' 'MAG', 'MAJ',
+  'IC', 'SL', 'SN', 'SH', 'XR', 'NF', 'NV'
 ]
 class EmbeddingBERTMorph_kor(nn.Module):
   """
@@ -134,72 +134,81 @@ class EmbeddingBERTMorph_kor(nn.Module):
     sentences = []
     attention_mask = []
     lengths = torch.zeros(len(inputs), dtype=torch.long)
-    # List for word phrase recovery
+    # List for word phrase/morpheme recovery index
     if self.is_word_phrase_embedding:
-      sent_wp_select = \
-        [([[0, 0]] if 'bos' in self.special_tokens else []) for _ in range(len(inputs))]
-        # -------------------------------------------------
-        # bos token treatment for word phrase embedding
-    
+      selects = [([[0, 0]] if 'bos' in self.special_tokens else []) for _ in range(len(inputs))]
+    else:
+      selects = [([0] if 'bos' in self.special_tokens else []) for _ in range(len(inputs))]
+
     for i, input in enumerate(inputs):
       # Input format:
       # ETRI/SL 에서/JKB 한국어/NNP BERT/SL 언어/NNG 모델/NNG 을/JKO 배포/NNG 하/XSV 었/EP 다/EF ./SF
       pos_text = ' '.join([morph['text'] + '/' + morph['pos_tag'] for morph in itertools.chain.from_iterable(input['pos'])])
-      tokens = self.tokenizer.tokenize('[CLS] '+input['text']+' [SEP]')
+      tokens = self.tokenizer.tokenize('[CLS] '+pos_text+' [SEP]')
       tokens_list.append(tokens)
-      tokens = self.tokenizer.convert_tokens_to_ids(tokens)
-      sentences.append(torch.tensor(tokens, dtype=torch.long))
+      token_ids = self.tokenizer.convert_tokens_to_ids(tokens)
+      sentences.append(torch.tensor(token_ids, dtype=torch.long))
       attention_mask.append(torch.ones([len(tokens)], dtype=torch.long))
-      lengths[i] = len(tokens) # index of [SEP]
+      lengths[i] = len(tokens) - 2 # index of [SEP]
 
-      # Word phrase recovery: select last lexical / functional morpheme from each WP
       if self.is_word_phrase_embedding:
-        j = 0
-        for word in input['pos']:
-          selects = [None, None] # lexical & functinoal index
-          for morph in word:
-            j += 1
-            if morph['pos_tag'] in lexical_morphemes_tag:
-              selects[0] = j
-            if morph['pos_tag'] not in lexical_morphemes_tag:
-              selects[1] = j
-          sent_wp_select[i].append(selects)
+        # Word phrase recovery: select last lexical / functional morpheme from each WP
+        pos_tag = lambda token: token.split('/')[-1].replace('_', '')
+        new_pair = [None, None] # lexical & functinoal index
+        pos_index = 0
+        for j, token in enumerate(tokens):
+          if token.endswith('_') and len(token)>1:
+            if pos_tag(token) in lexical_morphemes_tag:
+              new_pair[0] = j
+            if pos_tag(token) not in lexical_morphemes_tag:
+              new_pair[1] = j
+            # Last morpheme in word phrase
+            if pos_tag(token) == input['pos'][pos_index][-1]['pos_tag']:
+              selects[i].append(new_pair)
+              new_pair = [None, None] 
+              pos_index += 1
+      else:
+        # Morpheme recovery: select PoS tag(which contains contextual lexical information)
+        for j, token in enumerate(tokens):
+          if token.endswith('_') and len(token)>1:
+            selects[i].append(j)
+      
     sentences = nn.utils.rnn.pad_sequence(sentences, batch_first=True).to(device)
     attention_mask = nn.utils.rnn.pad_sequence(attention_mask, batch_first=True).to(device)
     # eos token treatment for word phrase embedding
-    if self.is_word_phrase_embedding and 'eos' in self.special_tokens:
-      for length, wp_select in zip(lengths, sent_wp_select):
-        wp_select.append([length, length])
-
+    if 'eos' in self.special_tokens:
+      for length, select in zip(lengths, selects):
+        if self.is_word_phrase_embedding:
+          select.append([length, length])
+        else:
+          select.append(length)
+    
+    # Run BERT model
     with torch.no_grad():
       output = self.model(sentences, attention_mask, torch.zeros_like(attention_mask))['last_hidden_state']
 
-    
-    # return word-phrase embeddings
+    # Use `selects` to:
+    # Return word-phrase embeddings
     if self.is_word_phrase_embedding:
       embedded = []
-      for sent, wp_select in zip(output, sent_wp_select):
-        embedded.append(torch.zeros(len(wp_select), self.embed_size).to(device))
-        for i, select in enumerate(wp_select):
-          left = select[0]; right = select[1]
+      for sent, select in zip(output, selects):
+        embedded.append(torch.zeros(len(select), self.embed_size).to(device))
+        for i, pair in enumerate(select):
+          left = pair[0]; right = pair[1]
           if left:
             embedded[-1][i][:self.embed_size//2] = sent[left]
           if right:
             embedded[-1][i][self.embed_size//2:] = sent[right]
       embedded = nn.utils.rnn.pad_sequence(embedded, batch_first=True)
       return embedded
-    
-    # return embeddings for all morphemes
+
+    # Return embeddings for all morphemes
     else:
-      output = output * attention_mask.unsqueeze(2)
-      if 'eos' not in self.special_tokens:
-        # remove eos token [SEP]
-        lengths = lengths.unsqueeze(1).unsqueeze(2).repeat(1, 1, self.embed_size).to(device)
-        output.scatter(1, lengths, torch.zeros(1, 1, self.embed_size).to(device))
-      if 'bos' not in self.special_tokens:
-        # remove bos token [CLS]
-        output = output[:, 1:, :]
-      return output
+      embedded = []
+      for sent, select in zip(output, selects):
+        embedded.append(sent[select])
+      embedded = nn.utils.rnn.pad_sequence(embedded, batch_first=True)
+      return embedded
 
 class EmbeddingBERT_eng(nn.Module):
   """
@@ -271,4 +280,3 @@ class EmbeddingBERT_eng(nn.Module):
         embedded[i] = embedded[i][:-1]
     embedded = nn.utils.rnn.pad_sequence(embedded, batch_first=True)
     return embedded
-

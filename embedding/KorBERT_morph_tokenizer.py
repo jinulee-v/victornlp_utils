@@ -69,7 +69,7 @@ def whitespace_tokenize(text):
 class BertTokenizer(object):
 	"""Runs end-to-end tokenization: punctuation splitting + wordpiece"""
 
-	def __init__(self, vocab_file, do_lower_case=True, max_len=None,
+	def __init__(self, vocab_file, do_lower_case=False, max_len=None,
 				 never_split=("[UNK]", "[SEP]", "[PAD]", "[CLS]", "[MASK]")):
 		if not os.path.isfile(vocab_file):
 			raise ValueError(
@@ -80,6 +80,7 @@ class BertTokenizer(object):
 			[(ids, tok) for tok, ids in self.vocab.items()])
 		self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case,
 											  never_split=never_split)
+		self.never_split = never_split
 		self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab)
 		self.max_len = max_len if max_len is not None else int(1e12)
 
