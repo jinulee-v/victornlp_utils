@@ -143,7 +143,17 @@ class EmbeddingBERTMorph_kor(nn.Module):
     for i, input in enumerate(inputs):
       # Input format:
       # ETRI/SL 에서/JKB 한국어/NNP BERT/SL 언어/NNG 모델/NNG 을/JKO 배포/NNG 하/XSV 었/EP 다/EF ./SF
-      pos_text = ' '.join([morph['text'] + '/' + morph['pos_tag'] for morph in itertools.chain.from_iterable(input['pos'])])
+      pos_text = []
+      wp_last_tokens = []
+      j = 1
+      for word_phrase in input['pos']:
+        for morph in word_phrase:
+          pos_text.append(morph['text']+'/'+morph['pos_tag'])
+          j += 1
+        wp_last_tokens.append(j)
+      assert len(wp_last_tokens) == input['word_count']
+      pos_text = ' '.join(pos_text)
+
       tokens = self.tokenizer.tokenize('[CLS] '+pos_text+' [SEP]')
       tokens_list.append(tokens)
       token_ids = self.tokenizer.convert_tokens_to_ids(tokens)
@@ -157,16 +167,18 @@ class EmbeddingBERTMorph_kor(nn.Module):
         new_pair = [None, None] # lexical & functinoal index
         pos_index = 0
         for j, token in enumerate(tokens):
+          if pos_index >= len(input['pos']):
+            break
           if token.endswith('_') and len(token)>1:
             if pos_tag(token) in lexical_morphemes_tag:
               new_pair[0] = j
             if pos_tag(token) not in lexical_morphemes_tag:
               new_pair[1] = j
-            # Last morpheme in word phrase
-            if pos_tag(token) == input['pos'][pos_index][-1]['pos_tag']:
-              selects[i].append(new_pair)
-              new_pair = [None, None] 
-              pos_index += 1
+          # Last morpheme in word phrase
+          if j == wp_last_tokens[pos_index]:
+            selects[i].append(new_pair)
+            new_pair = [None, None] 
+            pos_index += 1
       else:
         # Morpheme recovery: select PoS tag(which contains contextual lexical information)
         for j, token in enumerate(tokens):
