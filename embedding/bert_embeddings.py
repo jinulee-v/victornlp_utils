@@ -143,18 +143,19 @@ class EmbeddingBERTMorph_kor(nn.Module):
     for i, input in enumerate(inputs):
       # Input format:
       # ETRI/SL 에서/JKB 한국어/NNP BERT/SL 언어/NNG 모델/NNG 을/JKO 배포/NNG 하/XSV 었/EP 다/EF ./SF
-      pos_text = []
       wp_last_tokens = []
-      j = 1
+      tokens = ['[CLS]', '_']
+      j = 0 if 'bos' in self.special_tokens else -1
       for word_phrase in input['pos']:
         for morph in word_phrase:
-          pos_text.append(morph['text']+'/'+morph['pos_tag'])
-          j += 1
+          joined = morph['text']+'/'+morph['pos_tag']
+          tokenized = self.tokenizer.tokenize(joined)
+          j += len(tokenized)
+          tokens.extend(tokenized)
         wp_last_tokens.append(j)
       assert len(wp_last_tokens) == input['word_count']
-      pos_text = ' '.join(pos_text)
+      tokens.extend(['[SEP]', '_'])
 
-      tokens = self.tokenizer.tokenize('[CLS] '+pos_text+' [SEP]')
       tokens_list.append(tokens)
       token_ids = self.tokenizer.convert_tokens_to_ids(tokens)
       sentences.append(torch.tensor(token_ids, dtype=torch.long))
