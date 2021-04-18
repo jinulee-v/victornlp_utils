@@ -1,3 +1,4 @@
+import warnings
 
 def register_embedding(cls):
   """
@@ -14,9 +15,9 @@ try:
   try:
     from .bert_kobert_embedding import *
   except:
-    raise ImportWarning('KoBERT embedding cannot be loaded:\n  pip install kobert_transformers sentencepiece')
+    warnings.warn('KoBERT embedding cannot be loaded:\n  pip install kobert_transformers sentencepiece')
 except:
-  raise ImportWarning('BERT embeddings cannot be loaded:\n  pip install transformers')
+  warnings.warn('BERT embeddings cannot be loaded:\n  pip install transformers')
 
 from .dict_embeddings import *
 from .dict_kor_wordphrase_embeddings import *
