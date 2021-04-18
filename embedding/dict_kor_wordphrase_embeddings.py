@@ -17,6 +17,7 @@ import torch
 import torch.nn as nn
 import json
 
+from . import register_embedding
 from .dict_embeddings import EmbeddingDict
 
 class EmbeddingDictWordPhr_kor(EmbeddingDict):

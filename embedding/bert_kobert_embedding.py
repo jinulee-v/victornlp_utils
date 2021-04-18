@@ -19,6 +19,8 @@ import torch.nn as nn
 from transformers import BertTokenizer, BertModel
 from kobert_transformers import get_tokenizer
 
+from . import register_embedding
+
 @register_embedding
 class EmbeddingBERTWordPhr_kor(nn.Module):
   """

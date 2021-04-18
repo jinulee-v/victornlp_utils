@@ -17,6 +17,8 @@ import torch
 import torch.nn as nn
 import json
 
+from . import register_embedding
+
 class EmbeddingDict(nn.Module):
   """
   Abstract Embedding model that creates embedding based on lexicon data.

@@ -18,6 +18,8 @@ import torch
 import torch.nn as nn
 from transformers import BertTokenizer, BertModel
 
+from . import register_embedding
+
 @register_embedding
 class EmbeddingBERT_eng(nn.Module):
   """

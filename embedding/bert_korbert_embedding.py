@@ -18,6 +18,7 @@ import torch
 import torch.nn as nn
 from transformers import BertTokenizer, BertModel
 
+from . import register_embedding
 from .KorBERT_morph_tokenizer import BertTokenizer as KorBertTokenizer
 
 lexical_morphemes_tag = [
