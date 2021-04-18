@@ -17,11 +17,12 @@ import itertools
 import torch
 import torch.nn as nn
 from transformers import BertTokenizer, BertModel
+from kobert_transformers import get_tokenizer
 
 @register_embedding
-class EmbeddingBERT_eng(nn.Module):
+class EmbeddingBERTWordPhr_kor(nn.Module):
   """
-  Word-phrase level Embedding model using bert-base-uncased(Google, 2018).
+  Word-phrase level Embedding model using KoBERT(SKT-brain, 2019).
   Concatenates the hidden state of initial & final wordpiece tokens.
   """
   def __init__(self, config):
@@ -31,11 +32,9 @@ class EmbeddingBERT_eng(nn.Module):
     @param self The object pointer.
     @param config Dictionary. Configuration for EmbeddingBERTWordPhr_kor
     """
-    super(EmbeddingBERT_eng, self).__init__()
-    self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    self.model = BertModel.from_pretrained('bert-base-uncased')
-    self.model.eval()
-    self.model.requires_grad = False
+    super(EmbeddingBERTWordPhr_kor, self).__init__()
+    self.tokenizer = get_tokenizer()
+    self.model = BertModel.from_pretrained('monologg/kobert')
     self.embed_size = 1536
     self.special_tokens = config['special_tokens']
 
@@ -51,13 +50,11 @@ class EmbeddingBERT_eng(nn.Module):
     device = next(self.parameters()).device
     
     tokens_list = []
-    wp_list = []
     sentences = []
     attention_mask = []
     for input in inputs:
-      tokens = self.tokenizer.tokenize('[CLS] '+input['text']+' [SEP]')
+      tokens = self.tokenizer.tokenize('[CLS] '+input['text'].replace(' _ ', ' ').replace('_', '')+' [SEP]')
       tokens_list.append(tokens)
-      wp_list.append(input['text'].lower().split(' ') + ['SEP'])
       tokens = self.tokenizer.convert_tokens_to_ids(tokens)
       sentences.append(torch.tensor(tokens, dtype=torch.long))
       attention_mask.append(torch.ones([len(tokens)], dtype=torch.long))
@@ -70,18 +67,16 @@ class EmbeddingBERT_eng(nn.Module):
     temp = None
     for i, tokens in enumerate(tokens_list):
       embedded.append([])
-      wp_i = -1
       for j in range(len(tokens)):
         if tokens[j] == '[SEP]':
           embedded[i].append(output[i][j].repeat(2).unsqueeze(0))
           break
-        if tokens[j] == '[CLS]' or wp_list[i][wp_i].startswith(tokens[j]):
+        if tokens[j] == '[CLS]' or tokens[j].startswith('▁'):
           temp = output[i][j]
-        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or wp_list[i][wp_i+1].startswith(tokens[j+1]):
+        if j+1 == len(tokens) or tokens[j+1] == '[SEP]' or tokens[j+1].startswith('▁'):
           temp = torch.cat([temp, output[i][j]], 0)
           embedded[i].append(temp.unsqueeze(0))
           temp = None
-          wp_i += 1
       embedded[i] = torch.cat(embedded[i], 0)
       if 'bos' not in self.special_tokens:
         embedded[i] = embedded[i][1:]
