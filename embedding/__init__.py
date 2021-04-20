@@ -4,9 +4,9 @@ def register_embedding(cls):
   """
   @brief decorator for embedding classes.
   """
-  if 'embeddings' not in globals():
-    globals()['victornlp_embeddings'] = []
-  globals()['victornlp_embeddings'].append(cls)
+  if 'victornlp_embeddings' not in globals():
+    globals()['victornlp_embeddings'] = {}
+  victornlp_embeddings[cls.__name__] = cls
   return cls
 
 try:
