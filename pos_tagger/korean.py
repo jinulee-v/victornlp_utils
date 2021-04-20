@@ -6,6 +6,9 @@ Wrapper for publically available PoS taggers for various languages.
 
 from konlpy.tag import Komoran
 
+from . import register_pos_tagger
+
+@register_pos_tagger
 def pos_tag_Korean(inputs):
   """
   Korean pos tagger. Uses Komoran by Shineware, wrapped by KoNLPy package.
