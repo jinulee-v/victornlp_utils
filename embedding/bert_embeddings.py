@@ -36,10 +36,15 @@ class EmbeddingBERT_eng(nn.Module):
     super(EmbeddingBERT_eng, self).__init__()
     self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     self.model = BertModel.from_pretrained('bert-base-uncased')
-    self.model.eval()
-    self.model.requires_grad = False
     self.embed_size = 1536
     self.special_tokens = config['special_tokens']
+    self.fine_tune = bool(config['train'])
+    if self.fine_tune:
+      self.model.train()
+      self.model.requires_grad = False
+    else:
+      self.model.eval()
+      self.model.requires_grad = False
 
   def forward(self, inputs):
     """
@@ -66,8 +71,11 @@ class EmbeddingBERT_eng(nn.Module):
     sentences = nn.utils.rnn.pad_sequence(sentences, batch_first=True).to(device)
     attention_mask = nn.utils.rnn.pad_sequence(attention_mask, batch_first=True).to(device)
 
-    with torch.no_grad():
+    if self.fine_tune:
       output = self.model(sentences, attention_mask, torch.zeros_like(attention_mask))['last_hidden_state']
+    else:
+      with torch.no_grad():
+        output = self.model(sentences, attention_mask, torch.zeros_like(attention_mask))['last_hidden_state']
     embedded = []
     temp = None
     for i, tokens in enumerate(tokens_list):

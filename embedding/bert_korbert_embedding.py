@@ -48,8 +48,13 @@ class EmbeddingBERTMorph_kor(nn.Module):
     model_dir = config['file_directory']
     self.tokenizer = KorBertTokenizer.from_pretrained(model_dir)
     self.model = BertModel.from_pretrained(model_dir)
-    self.model.eval()
-    self.model.requires_grad = False
+    self.fine_tune = bool(config['train'])
+    if self.fine_tune:
+      self.model.train()
+      self.model.requires_grad = False
+    else:
+      self.model.eval()
+      self.model.requires_grad = False
 
     self.is_word_phrase_embedding = config['word_phrase']
     self.embed_size = 1536 if self.is_word_phrase_embedding else 768
@@ -133,8 +138,11 @@ class EmbeddingBERTMorph_kor(nn.Module):
           select.append(length)
     
     # Run BERT model
-    with torch.no_grad():
+    if self.fine_tune:
       output = self.model(sentences, attention_mask, torch.zeros_like(attention_mask))['last_hidden_state']
+    else:
+      with torch.no_grad():
+        output = self.model(sentences, attention_mask, torch.zeros_like(attention_mask))['last_hidden_state']
 
     # Use `selects` to:
     # Return word-phrase embeddings
