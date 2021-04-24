@@ -1,13 +1,14 @@
 import warnings
 
-def register_pos_tagger(fn):
+pos_taggers = {}
+def register_pos_tagger(name):
   """
   @brief decorator for embedding classes.
   """
-  if 'victornlp_pos_tagger' not in globals():
-    globals()['victornlp_pos_tagger'] = {}
-  victornlp_pos_tagger[fn.__name__] = fn
-  return fn
+  def decorator(fn):
+    pos_taggers[name] = fn
+    return fn
+  return decorator
 
 try:
   from .korean import *

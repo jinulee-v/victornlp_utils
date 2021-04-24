@@ -8,8 +8,8 @@ from konlpy.tag import Komoran
 
 from . import register_pos_tagger
 
-@register_pos_tagger
-def pos_tag_Korean(inputs):
+@register_pos_tagger('korean')
+def wrapper_komoran(inputs):
   """
   Korean pos tagger. Uses Komoran by Shineware, wrapped by KoNLPy package.
   
