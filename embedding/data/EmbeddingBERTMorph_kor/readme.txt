@@ -1,5 +1,5 @@
 Instructions:
-Recieve an API key and download BERT model(1/4) file from https://aiopen.etri.re.kr/aidata_download.php.
+Recieve an API key and download "BERT model(1/4)" file from https://aiopen.etri.re.kr/aidata_download.php.
 Only following files are required for VictorNLP utils:
 
 embedding/data/EmbeddingBERTMorph_kor/
