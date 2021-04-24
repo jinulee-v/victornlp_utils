@@ -1,13 +1,14 @@
 import warnings
 
-def register_embedding(cls):
+embeddings = {}
+def register_embedding(name):
   """
   @brief decorator for embedding classes.
   """
-  if 'victornlp_embeddings' not in globals():
-    globals()['victornlp_embeddings'] = {}
-  victornlp_embeddings[cls.__name__] = cls
-  return cls
+  def decorator(cls):
+    embeddings[name] = cls
+    return cls
+  return decorator
 
 try:
   from .bert_embeddings import *

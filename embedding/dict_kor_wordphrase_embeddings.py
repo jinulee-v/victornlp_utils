@@ -75,7 +75,7 @@ class EmbeddingDictWordPhr_kor(EmbeddingDict):
       
     return embedded
 
-@register_embedding
+@register_embedding('GloVe_WP_kor')
 class EmbeddingGloVeWordPhr_kor(EmbeddingDictWordPhr_kor):
   def __init__(self, config):
     super(EmbeddingGloVeWordPhr_kor, self).__init__(config)
@@ -86,7 +86,7 @@ class EmbeddingGloVeWordPhr_kor(EmbeddingDictWordPhr_kor):
     else:
       return self.special_tokens['unk']
 
-@register_embedding
+@register_embedding('PoS_WP_kor')
 class EmbeddingPoSWordPhr_kor(EmbeddingDictWordPhr_kor):
   def __init__(self, config):
     super(EmbeddingPoSWordPhr_kor, self).__init__(config)

@@ -28,7 +28,7 @@ lexical_morphemes_tag = [
   'IC', 'SL', 'SN', 'SH', 'XR', 'NF', 'NV'
 ]
 
-@register_embedding
+@register_embedding('KorBERT')
 class EmbeddingBERTMorph_kor(nn.Module):
   """
   Morpheme level Embedding model using KorBERT(ETRI, 2020).

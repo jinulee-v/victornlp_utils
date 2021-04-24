@@ -20,7 +20,7 @@ from transformers import BertTokenizer, BertModel
 
 from . import register_embedding
 
-@register_embedding
+@register_embedding('bert-base-uncased')
 class EmbeddingBERT_eng(nn.Module):
   """
   Word-phrase level Embedding model using bert-base-uncased(Google, 2018).

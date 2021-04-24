@@ -114,12 +114,12 @@ class EmbeddingDict(nn.Module):
   def target(self, token):
     return token if token in self.itos else self.special_tokens['unk']
 
-@register_embedding
+@register_embedding('PoS_eng')
 class EmbeddingPoS_eng(EmbeddingDict):
   """
   PoS tag embedding for English.
   """
-@register_embedding
+@register_embedding('GloVe_eng')
 class EmbeddingGloVe_eng(EmbeddingDict):
   """
   GloVe embedding for English.

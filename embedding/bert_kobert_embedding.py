@@ -21,7 +21,7 @@ from kobert_transformers import get_tokenizer
 
 from . import register_embedding
 
-@register_embedding
+@register_embedding('KoBERT')
 class EmbeddingBERTWordPhr_kor(nn.Module):
   """
   Word-phrase level Embedding model using KoBERT(SKT-brain, 2019).
