@@ -51,7 +51,7 @@ class EmbeddingBERTMorph_kor(nn.Module):
     self.fine_tune = bool(config['train'])
     if self.fine_tune:
       self.model.train()
-      self.model.requires_grad = False
+      self.model.requires_grad = True
     else:
       self.model.eval()
       self.model.requires_grad = False
