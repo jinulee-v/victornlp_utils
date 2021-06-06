@@ -3,6 +3,7 @@
 Convert different corpus to VictorNLP corpus format.
 """
 
+import argparse6
 import os, sys
 import json
 from torch.utils.data import random_split
@@ -50,7 +51,7 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
         while len(target['pos']) < morph['word_id']:
           target['pos'].append([])
         target['pos'][morph['word_id'] - 1].append({
-          'id': morph['id']
+          'id': morph['id'],
           'text': morph['form'],
           'pos_tag': morph['label'],
           'begin': morph['begin'],
@@ -130,10 +131,15 @@ def modu_to_victornlp(modu_dp_file, modu_pos_file, modu_ner_file, train_file, de
 
 
 if __name__ == '__main__':
-  os.chdir(sys.argv[2])
-  with open('Modu_DP_raw.json') as modu_dp_file, \
-       open('Modu_PoS_raw.json') as modu_pos_file, \
-       open('Modu_NER_raw.json') as modu_ner_file, \
+  parser = argparse.ArgumentParser(description='Reformat Modu corpus(NIKL) into VictorNLP format')
+  parser.add_argument('file-dir', type=str, help='Working directory that contains Modu corpus files')
+  parser.add_argument('--dp', type=str, default='Modu_DP_raw.json', help='Name of DP data file')
+  parser.add_argument('--pos', type=str, default='Modu_PoS_raw.json', help='Name of PoS data file')
+  parser.add_argument('--ner', type=str, default='Modu_NER_raw.json', help='Name of NER data file')
+  os.chdir(args.file_dir)
+  with open(args.dp) as modu_dp_file, \
+       open(args.pos) as modu_pos_file, \
+       open(args.ner) as modu_ner_file, \
        open('VictorNLP_kor(Modu)_train.json', 'w') as train_file, \
        open('VictorNLP_kor(Modu)_dev.json', 'w') as test_file, \
        open('VictorNLP_kor(Modu)_test.json', 'w') as test_file, \

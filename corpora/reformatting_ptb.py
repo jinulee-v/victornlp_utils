@@ -216,7 +216,12 @@ def ptb_to_victornlp(ptb_dp_train, ptb_dp_dev, ptb_dp_test, train_file, dev_file
 
 
 if __name__ == '__main__':
-  os.chdir(sys.argv[1])
+  parser = argparse.ArgumentParser(description='Reformat PTB(CoNLL-X style) into VictorNLP format')
+  parser.add_argument('file-dir', type=str, help='Working directory that contains PTB corpus files')
+  parser.add_argument('--train', type=str, default='PTB_DP_raw_train.txt', help='Name of train data file')
+  parser.add_argument('--dev', type=str, default='PTB_DP_raw_dev.txt', help='Name of dev data file')
+  parser.add_argument('--test', type=str, default='PTB_DP_raw_test.txt', help='Name of test data file')
+  os.chdir(args.file_dir)
   with open('PTB_DP_raw_train.txt') as ptb_dp_train, \
        open('PTB_DP_raw_dev.txt') as ptb_dp_dev, \
        open('PTB_DP_raw_test.txt') as ptb_dp_test, \
