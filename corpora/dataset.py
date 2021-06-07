@@ -22,6 +22,15 @@
 
 from torch.utils.data import Dataset
 
+dataset_preprocessors = {}
+def register_preprocessors(name):
+  def decorator(fn):
+    dataset_preprocessors[name] = fn
+    return fn
+  return decorator
+
+from .accuracy import *
+
 class VictorNLPDataset(Dataset):
   """
   Transparent wrapper for 'List of dictionaries' format. Implements map-style Dataset class.
@@ -47,6 +56,7 @@ class VictorNLPDataset(Dataset):
   def collate_fn(batch):
     return batch
 
+@register_preprocessors('word-count')
 def preprocessor_WordCount(inputs):
   """
   Adds word_count to inputs.
@@ -57,6 +67,7 @@ def preprocessor_WordCount(inputs):
 
   return inputs
 
+@register_preprocessors('dependency-parsing')
 def preprocessor_DependencyParsing(inputs):
   """
   Checks data integrity for dependency parsing.
