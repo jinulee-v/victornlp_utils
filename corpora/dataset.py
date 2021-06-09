@@ -29,8 +29,6 @@ def register_preprocessors(name):
     return fn
   return decorator
 
-from .accuracy import *
-
 class VictorNLPDataset(Dataset):
   """
   Transparent wrapper for 'List of dictionaries' format. Implements map-style Dataset class.
