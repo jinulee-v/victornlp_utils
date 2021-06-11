@@ -28,6 +28,15 @@ lexical_morphemes_tag = [
   'IC', 'SL', 'SN', 'SH', 'XR', 'NF', 'NV'
 ]
 
+replace = {
+  '/MMA': '/MM',
+  '/MMD': '/MM',
+  '/MMN': '/MM',
+  '/NV': '/NA',
+  '/NF': '/NA',
+  '/XR': '/NNG'
+}
+
 @register_embedding('etri-korbert')
 class EmbeddingBERTMorph_kor(nn.Module):
   """
@@ -90,6 +99,8 @@ class EmbeddingBERTMorph_kor(nn.Module):
       for word_phrase in input['pos']:
         for morph in word_phrase:
           joined = morph['text']+'/'+morph['pos_tag']
+          for sejong, etri in replace.items():
+            joined = joined.replace(sejong, etri)
           tokenized = self.tokenizer.tokenize(joined)
           j += len(tokenized)
           tokens.extend(tokenized)
