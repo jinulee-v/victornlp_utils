@@ -1,6 +1,8 @@
 """
 @module attention
-Implementation of various attention modules
+
+Implementation of various attention modules.
+- Bilinear Attention
 """
 
 import torch
