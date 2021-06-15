@@ -95,10 +95,11 @@ class EmbeddingBERTMorph_kor(nn.Module):
       # ETRI/SL 에서/JKB 한국어/NNP BERT/SL 언어/NNG 모델/NNG 을/JKO 배포/NNG 하/XSV 었/EP 다/EF ./SF
       wp_last_tokens = []
       tokens = ['[CLS]', '_']
-      j = 0 if 'bos' in self.special_tokens else -1
+      j = 1 if 'bos' in self.special_tokens else 0
       for word_phrase in input['pos']:
         for morph in word_phrase:
           joined = morph['text']+'/'+morph['pos_tag']
+          # Replace incompatible PoS tags between Sejong and ETRI format
           for sejong, etri in replace.items():
             joined = joined.replace(sejong, etri)
           tokenized = self.tokenizer.tokenize(joined)
@@ -135,9 +136,12 @@ class EmbeddingBERTMorph_kor(nn.Module):
       else:
         # Morpheme recovery: select PoS tag(which contains contextual lexical information)
         for j, token in enumerate(tokens):
-          if token.endswith('_') and len(token)>1:
+          if token == '[UNK]':
             selects[i].append(j)
-      
+          elif token.endswith('_') and len(token) > 1:
+            selects[i].append(j)
+        assert len(selects[i]) == input['pos'][-1][-1]['id'] + 1
+
     sentences = nn.utils.rnn.pad_sequence(sentences, batch_first=True).to(device)
     attention_mask = nn.utils.rnn.pad_sequence(attention_mask, batch_first=True).to(device)
     # eos token treatment for word phrase embedding
@@ -147,7 +151,7 @@ class EmbeddingBERTMorph_kor(nn.Module):
           select.append([length, length])
         else:
           select.append(length)
-    
+          
     # Run BERT model
     if self.fine_tune:
       output = self.model(sentences, attention_mask, torch.zeros_like(attention_mask))['last_hidden_state']

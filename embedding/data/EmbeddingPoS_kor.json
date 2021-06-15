@@ -30,7 +30,13 @@
     "pos_tag": "VCN"
   },
   {
-    "pos_tag": "MM"
+    "pos_tag": "MMA"
+  },
+  {
+    "pos_tag": "MMD"
+  },
+  {
+    "pos_tag": "MMN"
   },
   {
     "pos_tag": "MAG"
@@ -123,6 +129,9 @@
     "pos_tag": "SN"
   },
   {
+    "pos_tag": "SW"
+  },
+  {
     "pos_tag": "NF"
   },
   {
@@ -130,6 +139,9 @@
   },
   {
     "pos_tag": "SN"
+  },
+  {
+    "pos_tag": "NV"
   },
   {
     "pos_tag": "NA"

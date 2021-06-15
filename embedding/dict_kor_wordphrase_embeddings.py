@@ -15,7 +15,6 @@ Requirements:
 
 import torch
 import torch.nn as nn
-import json
 
 from . import register_embedding
 from .dict_embeddings import EmbeddingDict
@@ -23,13 +22,6 @@ from .dict_embeddings import EmbeddingDict
 class EmbeddingDictWordPhr_kor(EmbeddingDict):
   """
   Abstract template for Korean lexicon-style embeddings. Implements Word-phrase level PoS tag selection.
-  
-  Korean "pos" format:
-        [
-          ["", ""],
-          ["", "", ""],
-          ...
-        ]
   
   Follows Sejong morpheme tagging format.
   """
@@ -77,17 +69,26 @@ class EmbeddingDictWordPhr_kor(EmbeddingDict):
 
 @register_embedding('glove-wp-kor')
 class EmbeddingGloVeWordPhr_kor(EmbeddingDictWordPhr_kor):
+  """
+  GloVe embedding for Korean, for word-phrase level tokenization(space).
+  """
   def __init__(self, config):
     super(EmbeddingGloVeWordPhr_kor, self).__init__(config)
   
+  
   def target(self, word):
-    if word['text'] in self.stoi:
-      return word['text']
+    joined = word['text'] + '/' + word['pos_tag']
+    if joined in self.stoi:
+      return joined
     else:
+      print('Morph' + joined)
       return self.special_tokens['unk']
 
 @register_embedding('pos-wp-kor')
 class EmbeddingPoSWordPhr_kor(EmbeddingDictWordPhr_kor):
+  """
+  PoS tag embedding for Korean, for word-phrase level tokenization(space).
+  """
   def __init__(self, config):
     super(EmbeddingPoSWordPhr_kor, self).__init__(config)
   

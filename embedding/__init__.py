@@ -21,4 +21,5 @@ except:
   warnings.warn('BERT embeddings cannot be loaded:\n  pip install transformers')
 
 from .dict_embeddings import *
+from .dict_kor_morpheme_embeddings import *
 from .dict_kor_wordphrase_embeddings import *
