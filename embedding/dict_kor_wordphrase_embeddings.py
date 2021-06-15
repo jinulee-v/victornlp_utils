@@ -81,7 +81,6 @@ class EmbeddingGloVeWordPhr_kor(EmbeddingDictWordPhr_kor):
     if joined in self.stoi:
       return joined
     else:
-      print('Morph' + joined)
       return self.special_tokens['unk']
 
 @register_embedding('pos-wp-kor')
