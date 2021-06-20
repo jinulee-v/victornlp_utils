@@ -10,6 +10,8 @@ import os
 import json
 import argparse
 
+from ..pos_tagger import pos_taggers
+
 # If word is in the set, do not insert space.
 word_concat_with_prev = set([
   '...', ':', ';', '%', '\'\'',     # exceptional cases
@@ -61,6 +63,13 @@ def sst_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, dlabels_txt,
       raw_sent = raw_sent.replace(symbol+' ', symbol)
     for before, after in punct.items():
       raw_sent = raw_sent.replace(before, after)
+    
+    # Work with pos_tag
+
+    pos = pos_taggers['english']([{
+      'text': ' '.join(token),
+      'word_count': len(token)
+    }])[0]['pos']
 
     # Work with dependency
     dependency = []
@@ -73,6 +82,8 @@ def sst_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, dlabels_txt,
     for dp_label in rel:
       dp_labels.add(dp_label)
     
+    # Work with pos tagger
+
     # Work with sentiment
     sentiment = []
     for head, sent_label in zip(range(1, len(token)+1), dlabel):
@@ -92,6 +103,7 @@ def sst_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, dlabels_txt,
     victornlp.append({
       'text': ' '.join(token),
       'text_clean': raw_sent,
+      'pos': pos,
       'word_count': len(token),
       'dependency': dependency,
       'sentiment': sentiment
