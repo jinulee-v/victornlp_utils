@@ -1,3 +1,10 @@
+"""
+@module reformatting_sst
+Convert SST(Stanford Sentiment Tree) corpus(dependency tree version) to VictorNLP corpus format.
+Is designed to reformat the file distributed in:
+> https://github.com/ttpro1995/TreeLSTMSentiment
+Execute ./fetch_and_preprocess.sh to obtain relevant files(download original SST and dependency-parse it).
+"""
 
 import os
 import json

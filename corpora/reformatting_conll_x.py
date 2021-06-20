@@ -1,6 +1,8 @@
 """
-@module reformatting
-Convert different corpus to VictorNLP corpus format.
+@module reformatting_conll_x
+Convert CoNLL_X shared task corpus to VictorNLP corpus format.
+Is designed to reformat the file distributed in:
+> https://github.com/KhalilMrini/LAL-Parser
 """
 
 import os, sys

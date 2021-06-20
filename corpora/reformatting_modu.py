@@ -1,6 +1,8 @@
 """
-@module reformatting
-Convert different corpus to VictorNLP corpus format.
+@module reformatting_modu
+Convert Modu corpus to VictorNLP corpus format.
+Is designed to reformat the file distributed in:
+> https://corpus.korean.go.kr/
 """
 
 import argparse6
