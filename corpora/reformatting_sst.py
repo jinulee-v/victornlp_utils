@@ -84,6 +84,9 @@ def sst_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, dlabels_txt,
         'label': sent_label
       })
     for sentiment_label in dlabel:
+      if sent_label == '#':
+        # Dependency span does not match original binarized constituents.
+        continue
       sentiment_labels.add(sentiment_label)
     
     victornlp.append({
