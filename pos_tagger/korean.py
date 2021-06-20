@@ -1,7 +1,7 @@
 """
-@module pos_tagger
+@module pos_tagger/korean
 
-Wrapper for publically available PoS taggers for various languages.
+Implements VictorNLP_style wrapper for KOMORAN PoS tagger.
 """
 
 from konlpy.tag import Komoran

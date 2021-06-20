@@ -14,3 +14,8 @@ try:
   from .korean import *
 except:
   warnings.warn('Komoran PoS tagger cannot be loaded:\n  pip install konlpy; sudo apt-get install default-jre')
+
+try:
+  from .english import *
+except Exception as e:
+  warnings.warn('NLTK PoS tagger cannot be loaded:\n  pip install nltk')
