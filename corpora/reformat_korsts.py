@@ -44,7 +44,7 @@ def main(args):
     })
 
     # scores.json
-    scores.append(float(line[4]))
+    scores.append({"score": float(line[4])})
   
   
   with open(args.dst_header + '.a.json', 'w', encoding='UTF-8') as file:
