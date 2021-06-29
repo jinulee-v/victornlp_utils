@@ -50,9 +50,9 @@ class EmbeddingDict(nn.Module):
       self.full_information = json.load(embedding_file)
      
     if 'key' in config:
-      key = config['key']
+      self.key = config['key']
     else:
-      key = 'text'
+      self.key = 'text'
     self.special_tokens = config['special_tokens']
     assert 'pad' in self.special_tokens
     
@@ -60,8 +60,8 @@ class EmbeddingDict(nn.Module):
     self.stoi = {}
     self.embeddings = []
     for i, info in enumerate(self.full_information):
-      self.itos.append(info[key])
-      self.stoi[info[key]] = i
+      self.itos.append(info[self.key])
+      self.stoi[info[self.key]] = i
       if config['from_pretrained']:
         self.embeddings.append(torch.tensor([float(x) for x in info['embedding'].split()]).unsqueeze(0))
     
@@ -102,7 +102,7 @@ class EmbeddingDict(nn.Module):
       if has_eos:
         word_embedding[-1] = self.stoi[self.special_tokens['eos']]
        
-      tokens = [pos['text'] for pos in input['pos']]
+      tokens = [pos[self.key] for pos in input['pos']]
       for word_i, token in enumerate(tokens, has_bos):
         word_embedding[word_i] = self.stoi[self.target(token)]
       

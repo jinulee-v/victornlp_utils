@@ -53,35 +53,36 @@ class ChildSumTreeLSTM(nn.Module):
     @param j Integer. Index of current node.
     @param children LongTensor. Indices of the children of the current node.
     @param x Tensor(length, input_size). Input embedding of the current sentence.
-    @param h Tensor(length, hidden_size). Hidden state of the current sentence.
-    @param c Tensor(length, hidden_size). Cell state of the current sentence.
+    @param h List[Tensor(hidden_size)]. Hidden state of the current sentence.
+    @param c List[Tensor(hidden_size)]. Cell state of the current sentence.
     """
 
-    h_j_sum = torch.sum(torch.gather(h, 1, children))
+    h_j_sum = torch.sum(torch.cat([h[child].unsqueeze(0) for child in children], dim=0), dim=0)
 
     iou_j = self.W_iou(x[j]) + self.U_iou(h_j_sum)
-    i_j, o_j, u_j = torch.split(iou_j, iou_j.size(1)//3, dim=1)
-    i_j = F.sigmoid(i_j)
-    o_j = F.sigmoid(o_j)
-    u_j = F.tanh(u_j)
+    i_j, o_j, u_j = torch.split(iou_j, iou_j.size(0)//3, dim=0)
+    i_j = torch.sigmoid(i_j)
+    o_j = torch.sigmoid(o_j)
+    u_j = torch.tanh(u_j)
+    assert i_j.size() == o_j.size() == u_j.size()
 
-    c[j, :] = i_j * u_j
+    c[j] = i_j * u_j
     for child in children:
-      c[j, :] += (self.W_f(x[j]) + self.U_f(h[child])) * c[child]
-    h[j, :] = o_j * F.tanh(c[j, :])
+      c[j] += (self.W_f(x[j, :]) + self.U_f(h[child])) * c[child]
+    h[j] = o_j * torch.tanh(c[j])
   
   def _forward_postorder(self, j, children_list, x, h, c, device):
     """
     Postorder traversal of the given tree.
     """
     children = children_list[j]
-    if not children:
+    if len(children) == 0:
       return
     
     for child in children:
-      self._forward_postorder(self, child, children_list, x, h, c)
+      self._forward_postorder(child, children_list, x, h, c, device)
     
-    self._forward_node(j, torch.LongTensor(children).to(device), x, h, c)
+    self._forward_node(j, children, x, h, c)
   
   def forward(self, dp_tree, input_embeddings, root):
     """
@@ -90,21 +91,24 @@ class ChildSumTreeLSTM(nn.Module):
     @param dp_tree VictorNLP depednency tree format
     @param input_embeddings Tensor(length, input_size).
     @param root Integer. Starting point for _forward_postorder
+    @return h Tensor(length, hidden_size). Hidden state of the Tree-LSTM.
+    @return c Tensor(length, hidden_size). Cell state of the Tree-LSTM.
     """
     device = input_embeddings.device
 
     # Create children_list
-    children_list = []
-    for arc in reversed(dp_tree):
-      if len(children_list) < max(arc['dep'], arc['head']):
-        children_list.extend([[] for _ in range(max(arc['dep'], arc['head'] - len(children_list)))])
-      children_list[arrc['head']].append(arc['dep'])
+    children_list = [[] for _ in range(input_embeddings.size(0))]
+    for arc in dp_tree:
+      children_list[arc['head']].append(arc['dep'])
     
     # Create empty hidden/cell state matrices
-    h = torch.zeros(input_embeddings.size(0), self.hidden_size, device=device)
-    c = torch.zeros_like(h)
+    h = [torch.zeros(self.hidden_size, device=device) for _ in range(input_embeddings.size(0))]
+    c = [torch.zeros(self.hidden_size, device=device) for _ in range(input_embeddings.size(0))]
 
     # Recursive call
-    _forward_postorder(root, children_list, input_embeddings, h, c)
+    self._forward_postorder(root, children_list, input_embeddings, h, c, device)
+
+    h = torch.cat([h_x.unsqueeze(0) for h_x in h], dim=0)
+    c = torch.cat([c_x.unsqueeze(0) for c_x in c], dim=0)
 
     return h, c
