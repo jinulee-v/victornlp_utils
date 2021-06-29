@@ -54,6 +54,39 @@ class VictorNLPDataset(Dataset):
   def collate_fn(batch):
     return batch
 
+class VictorNLPPairDataset(Dataset):
+  """
+  Special class for Sentence Pair Tasks(NLI, STS, Paraphrase detection, ...)
+  """
+
+  def __init__(self, inputs_a, inputs_b, inputs_pairinfo, preprocessors=[]):
+    """
+    Constructor for VictorNLPDataset.
+    
+      @param inputs_a List of dictionaries: VictorNLP corpus format.
+      @param inputs_b List of dictionaries: VictorNLP corpus format.
+      @param inputs_pairinfo List of objects: Whatever data needed to store the information pair. It may be a label(paraphrase/NLI) or a floating point(STS), etc.
+      @param preprocessors List of callables. preprocessor_*() or other callable formats that take 'inputs' is accepted.
+    """
+    # All three parameters should have equal lengths.
+    assert len(inputs_a) == len(inputs_b) == len(inputs_pairinfo)
+
+    for preprocessor in preprocessors:
+      inputs_a = preprocessor(inputs_a)
+      inputs_b = preprocessor(inputs_b)
+    self._data_a = inputs_a
+    self._data_b = inputs_b
+    self._data_pairinfo = inputs_pairinfo
+
+  def __getitem__(self, idx):
+    return (self._data_a[idx], self._data_b[idx], self._data_pairinfo[idx])
+  
+  def __len__(self):
+    return len(self._data_a)
+  
+
+###############################################################################
+
 @register_preprocessors('word-count')
 def preprocessor_WordCount(inputs):
   """
