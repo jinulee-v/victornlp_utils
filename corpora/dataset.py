@@ -83,6 +83,9 @@ class VictorNLPPairDataset(Dataset):
   
   def __len__(self):
     return len(self._data_a)
+
+  def collate_fn(batch):
+    return [pair[0] for pair in batch], [pair[1] for pair in batch], [pair[2] for pair in batch]
   
 
 ###############################################################################
