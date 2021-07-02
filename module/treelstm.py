@@ -40,14 +40,18 @@ class ChildSumTreeLSTM(nn.Module):
     self.input_size = input_size
     self.hidden_size = hidden_size
 
-    self.W_iou = nn.Linear(self.input_size, self.hidden_size * 3)
-    self.W_f   = nn.Linear(self.input_size, self.hidden_size)
-    self.U_iou = nn.Linear(self.hidden_size, self.hidden_size * 3, bias=False)
-    self.U_f   = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+    self.W_i = nn.Linear(self.input_size, self.hidden_size)
+    self.W_o = nn.Linear(self.input_size, self.hidden_size)
+    self.W_u = nn.Linear(self.input_size, self.hidden_size)
+    self.W_f = nn.Linear(self.input_size, self.hidden_size)
+    self.U_i = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+    self.U_o = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+    self.U_u = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+    self.U_f = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
   
   def _forward_node(self, j, children, x, h, c):
     """
-    Constructor for ChildSumTreeLSTM.
+    Forward per node.
     
     @param self The object pointer.
     @param j Integer. Index of current node.
@@ -57,18 +61,19 @@ class ChildSumTreeLSTM(nn.Module):
     @param c List[Tensor(hidden_size)]. Cell state of the current sentence.
     """
 
-    h_j_sum = torch.sum(torch.cat([h[child].unsqueeze(0) for child in children], dim=0), dim=0)
+    if len(children) > 0:
+      h_j_sum = torch.sum(torch.cat([h[child].unsqueeze(0) for child in children], dim=0), dim=0)
+    else:
+      h_j_sum = torch.zeros_like(h[j])
 
-    iou_j = self.W_iou(x[j]) + self.U_iou(h_j_sum)
-    i_j, o_j, u_j = torch.split(iou_j, iou_j.size(0)//3, dim=0)
-    i_j = torch.sigmoid(i_j)
-    o_j = torch.sigmoid(o_j)
-    u_j = torch.tanh(u_j)
+    i_j = torch.sigmoid(self.W_i(x[j]) + self.U_i(h_j_sum))
+    o_j = torch.sigmoid(self.W_o(x[j]) + self.U_o(h_j_sum))
+    u_j = torch.tanh(self.W_u(x[j]) + self.U_u(h_j_sum))
     assert i_j.size() == o_j.size() == u_j.size()
 
     c[j] = i_j * u_j
     for child in children:
-      c[j] += (self.W_f(x[j, :]) + self.U_f(h[child])) * c[child]
+      c[j] += torch.sigmoid((self.W_f(x[j, :]) + self.U_f(h[child]))) * c[child]
     h[j] = o_j * torch.tanh(c[j])
   
   def _forward_postorder(self, j, children_list, x, h, c, device):
@@ -76,11 +81,9 @@ class ChildSumTreeLSTM(nn.Module):
     Postorder traversal of the given tree.
     """
     children = children_list[j]
-    if len(children) == 0:
-      return
-    
-    for child in children:
-      self._forward_postorder(child, children_list, x, h, c, device)
+    if len(children) != 0:
+      for child in children:
+        self._forward_postorder(child, children_list, x, h, c, device)
     
     self._forward_node(j, children, x, h, c)
   
