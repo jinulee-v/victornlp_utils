@@ -1,8 +1,8 @@
 """
-@module reformatting_sst
-Convert SST(Stanford Sentiment Tree) corpus(dependency tree version) to VictorNLP corpus format.
+@module reformatting_sick
+Convert SICK(Stanford Sentiment Tree) corpus(dependency tree version) to VictorNLP corpus format.
 Is designed to reformat the file distributed in:
-> https://github.com/ttpro1995/TreeLSTMSentiment
+> https://github.com/dasguptar/treelstm.pytorch
 Execute ./fetch_and_preprocess.sh to obtain relevant files(download original SST and dependency-parse it).
 """
 
@@ -33,27 +33,28 @@ punct = {
   '--'   : '-'
 }
 
-def sst_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, dlabels_txt, out_file, labels_file):
+def sick_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, sim_txt, ent_txt, out_file, pairinfo_file, labels_file):
   raw_sents = sents_txt.readlines()
   tokens = sents_toks.readlines()
   rels = rels_txt.readlines()
   dparents = dparents_txt.readlines()
-  dlabels = dlabels_txt.readlines()
+  sims = sim_txt.readlines()
+  ents = ent_txt.readlines()
 
-  assert len(raw_sents) == len(tokens) == len(rels) == len(dparents) == len(dlabels)
+  assert len(raw_sents) == len(tokens) == len(rels) == len(sims) == len(ents) == len(dparents)
 
   tokens = [line.split() for line in tokens]
   rels = [line.split() for line in rels]
   dparents = [line.split() for line in dparents]
-  dlabels = [line.split() for line in dlabels]
+  ents = [line.strip() for line in ents]
 
   victornlp = []
   pos_labels = set()
   dp_labels = set()
-  sentiment_labels = set()
-  for raw_sent, token, rel, dparent, dlabel in zip(raw_sents, tokens, rels, dparents, dlabels):
-    if not len(token) == len(rel) == len(dparent) == len(dlabel):
-      print(len(token), len(rel), len(dparent), len(dlabel))
+  nli_labels = set(ents)
+  for raw_sent, token, rel, dparent in zip(raw_sents, tokens, rels, dparents):
+    if not len(token) == len(rel) == len(dparent):
+      print(len(token), len(rel), len(dparent))
       continue
       return
 
@@ -88,37 +89,29 @@ def sst_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, dlabels_txt,
     # Work with pos tagger
 
     # Work with sentiment
-    sentiment = []
-    for head, sent_label in zip(range(1, len(token)+1), dlabel):
-      if sent_label == '#':
-        # Dependency span does not match original binarized constituents.
-        continue
-      sentiment.append({
-        'head': head,
-        'label': sent_label
+    sts_nli = []
+    for sts, nli in zip(sims, ents):
+      sts_nli.append({
+        'sts': round(float(sts), 2),
+        'nli': nli
       })
-    for sentiment_label in dlabel:
-      if sent_label == '#':
-        # Dependency span does not match original binarized constituents.
-        continue
-      sentiment_labels.add(sentiment_label)
     
     victornlp.append({
       'text': ' '.join(token),
-      'text_clean': raw_sent,
-      'pos': pos,
+      'text_clean': raw_sent.strip(),
       'word_count': len(token),
-      'dependency': dependency,
-      'sentiment': sentiment
+      'pos': pos,
+      'dependency': dependency
     })
   
   labels = {
     'pos_labels': sorted(list(pos_labels)),
     'dp_labels': sorted(list(dp_labels)),
-    'sentiment_labels': sorted(list(sentiment_labels))
+    'nli_labels': sorted(list(nli_labels))
   }
 
   json.dump(victornlp, out_file, ensure_ascii=False, indent=4)
+  json.dump(sts_nli, pairinfo_file, ensure_ascii=False, indent=4)
   json.dump(labels, labels_file, ensure_ascii=False, indent=4)
 
 
@@ -128,11 +121,23 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   os.chdir(args.file_dir)
-  with open(os.path.join(args.file_dir, 'sents.txt')) as sents_txt, \
-       open(os.path.join(args.file_dir, 'sents.toks')) as sents_toks, \
-       open(os.path.join(args.file_dir, 'rels.txt')) as rels_txt, \
-       open(os.path.join(args.file_dir, 'dparents.txt')) as dparents_txt, \
-       open(os.path.join(args.file_dir, 'dlabels.txt')) as dlabels_txt, \
-       open('VictorNLP_eng(SST).json', 'w') as out_file, \
-       open('VictorNLP_eng(SST)_labels.json', 'w') as labels_file:
-    sst_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, dlabels_txt, out_file, labels_file)
+  with open(os.path.join(args.file_dir, 'a.txt')) as sents_txt, \
+       open(os.path.join(args.file_dir, 'a.toks')) as sents_toks, \
+       open(os.path.join(args.file_dir, 'a.rels')) as rels_txt, \
+       open(os.path.join(args.file_dir, 'a.parents')) as dparents_txt, \
+       open(os.path.join(args.file_dir, 'sim.txt')) as sim_txt, \
+       open(os.path.join(args.file_dir, 'ent.txt')) as ent_txt, \
+       open('VictorNLP_eng(SICK).a.json', 'w') as out_file, \
+       open('VictorNLP_eng(SICK).pairinfo.json', 'w') as pairinfo_file, \
+       open('VictorNLP_eng(SICK)_labels.json', 'w') as labels_file:
+    sick_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, sim_txt, ent_txt, out_file, pairinfo_file, labels_file)
+  with open(os.path.join(args.file_dir, 'b.txt')) as sents_txt, \
+       open(os.path.join(args.file_dir, 'b.toks')) as sents_toks, \
+       open(os.path.join(args.file_dir, 'b.rels')) as rels_txt, \
+       open(os.path.join(args.file_dir, 'b.parents')) as dparents_txt, \
+       open(os.path.join(args.file_dir, 'sim.txt')) as sim_txt, \
+       open(os.path.join(args.file_dir, 'ent.txt')) as ent_txt, \
+       open('VictorNLP_eng(SICK).b.json', 'w') as out_file, \
+       open('VictorNLP_eng(SICK).pairinfo.json', 'w') as pairinfo_file, \
+       open('VictorNLP_eng(SICK)_labels.json', 'w') as labels_file:
+    sick_to_victornlp(sents_txt, sents_toks, rels_txt, dparents_txt, sim_txt, ent_txt, out_file, pairinfo_file, labels_file)

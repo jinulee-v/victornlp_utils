@@ -44,14 +44,14 @@ def main(args):
     })
 
     # scores.json
-    scores.append({"score": float(line[4])})
+    scores.append({"sts": float(line[4])})
   
   
   with open(args.dst_header + '.a.json', 'w', encoding='UTF-8') as file:
     json.dump(a, file, indent=4, ensure_ascii=False)
   with open(args.dst_header + '.b.json', 'w', encoding='UTF-8') as file:
     json.dump(b, file, indent=4, ensure_ascii=False)
-  with open(args.dst_header + '.scores.json', 'w', encoding='UTF-8') as file:
+  with open(args.dst_header + '.pairinfo.json', 'w', encoding='UTF-8') as file:
     json.dump(scores, file, indent=4)
 
 if __name__ == '__main__':
