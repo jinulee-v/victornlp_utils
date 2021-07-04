@@ -12,8 +12,8 @@ def register_pos_tagger(name):
 
 try:
   from .korean import *
-except:
-  warnings.warn('Komoran PoS tagger cannot be loaded:\n  pip install konlpy; sudo apt-get install default-jre')
+except Exception as e:
+  warnings.warn('Khaiii PoS tagger cannot be loaded:\n' + str(e))
 
 try:
   from .english import *

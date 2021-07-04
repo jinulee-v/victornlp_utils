@@ -8,6 +8,8 @@ from khaiii import KhaiiiApi
 
 from . import register_pos_tagger
 
+api = None
+
 @register_pos_tagger('korean')
 def wrapper_khaiii(inputs):
   """
@@ -16,7 +18,9 @@ def wrapper_khaiii(inputs):
   @param inputs List of dictionaries.
   @return inputs Updated inputs.
   """
-  api = KhaiiiApi()
+  global api
+  if api is None:
+    api = KhaiiiApi()
   for input in inputs:
     assert 'text' in input
     assert 'word_count' in input
@@ -27,7 +31,6 @@ def wrapper_khaiii(inputs):
     words = input['text'].split()
     assert len(words) == input['word_count']
     
-    pos_tagged = komoran.pos(input['text'].replace(' ', '\n'), flatten=False)
     word_i = 0
     pos = [
         [
@@ -36,7 +39,7 @@ def wrapper_khaiii(inputs):
             'text': morph.lex,
             'pos_tag': morph.tag
           } for morph in word.morphs
-        ] for word in api.analyze(text)
+        ] for word in api.analyze(input['text'])
       ]
     assert len(pos) == input['word_count']
     input['pos'] = pos
