@@ -10,7 +10,7 @@ import torch.nn as nn
 
 class BilinearAttention(nn.Module):
   """
-  Bilinear attention module for Left-To-Right parser
+  Bilinear attention module.
   """
 
   def __init__(self, encoder_size, decoder_size, label_size):
