@@ -30,12 +30,9 @@ class GCN(nn.Module):
     self.hidden_size = hidden_size
     self.num_layers = num_layers
 
-    self.layers = nn.ParameterList(
-      [nn.Parameter(torch.zeros(self.input_size, self.hidden_size))] +
-      [nn.Parameter(torch.zeros(self.hidden_size, self.hidden_size)) for _ in range(self.num_layers - 1)]
-    )
-    self.biases = nn.ParameterList(
-      [nn.Parameter(torch.zeros(self.hidden_size)) for _ in range(self.num_layers)]
+    self.layers = nn.ModuleList(
+      [nn.Linear(self.input_size, self.hidden_size)] +
+      [nn.Linear(self.hidden_size, self.hidden_size) for _ in range(self.num_layers - 1)]
     )
   
   def forward(self, adj_matrix, input_state):
@@ -49,21 +46,14 @@ class GCN(nn.Module):
     batch_size = adj_matrix.size(0)
     device = next(self.parameters()).device
 
-    adj_matrix = adj_matrix.detach()
+    adj_matrix = adj_matrix.detach() + torch.eye(adj_matrix.size(1), device=device).unsqueeze(0)
 
-    norm = torch.sum(adj_matrix, dim=2, keepdim=True) + 1
+    norm = torch.sum(adj_matrix, dim=2, keepdim=True)
+    adj_matrix /= norm
     
     state = input_state
-    for layer, bias in zip(self.layers, self.biases):
-      # state = ReLU( D_sqrt * adj_matrix * D_sqrt * state * layer)
-      state = torch.relu(
-        torch.matmul(
-          torch.matmul(
-            adj_matrix, # Tensor(batch_size, length, length)
-            state
-          ), # Tensor(batch_size, length, input/hidden_dim)
-          layer
-        ) # Tensor(batch_size, length, hidden_dim)
-      ) + torch.matmul(state, layer) + bias
+    for layer in self.layers:
+      # state = ReLU( (adj_matrix + I)/norm * state * layer)
+      state = torch.relu(layer(torch.matmul(adj_matrix, state)))
     
     return state
