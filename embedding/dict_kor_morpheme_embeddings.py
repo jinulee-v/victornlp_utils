@@ -50,6 +50,13 @@ class EmbeddingGloVeMorph_kor(EmbeddingDictMorph_kor):
     super(EmbeddingGloVeMorph_kor, self).__init__(config)
   
   def target(self, word):
+    replace = {
+      'MMD': 'MM',
+      'MMN': 'MM',
+      'MMA': 'MM'
+    }
+    if word['pos_tag'] in replace:
+      word['pos_tag'] = replace[word['pos_tag']]
     joined = word['text'] + '/' + word['pos_tag']
     if joined in self.stoi:
       return joined
