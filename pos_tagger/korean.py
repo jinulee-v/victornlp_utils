@@ -42,6 +42,18 @@ def wrapper_khaiii(inputs):
         ] for word in api.analyze(input['text'])
       ]
     assert len(pos) == input['word_count']
+
+    # Fix some keys
+    replace = {
+      'ZN': 'NF',
+      'ZV': 'NV',
+      'ZZ': 'NA'
+    }
+    for wp in pos:
+      for morph in wp:
+        if morph['pos_tag'] in replace:
+          morph['pos_tag'] = repalce[morph['pos_tag']]
+    
     input['pos'] = pos
 
   return inputs
